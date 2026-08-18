@@ -11,12 +11,6 @@ const ONBOARDED_COOKIE = "hanki_onboarded";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (pathname === "/") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/v10";
-    return NextResponse.rewrite(url);
-  }
-  if (pathname === "/v10") return NextResponse.next();
   if (pathname.startsWith("/onboarding")) return NextResponse.next();
 
   const onboarded = request.cookies.get(ONBOARDED_COOKIE)?.value === "1";

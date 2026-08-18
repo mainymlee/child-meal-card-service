@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { calcBalancePlan, getCycleInfo } from "@/lib/balance";
-import { CARD_USABLE_UNTIL, DEMO_USER_NAME } from "@/lib/persona";
 import { useBalance } from "@/lib/hooks/useBalance";
 import { DEFAULT_DONG, useDong } from "@/lib/hooks/useDong";
 import { useExpMode } from "@/lib/hooks/useExpMode";
@@ -63,6 +62,9 @@ export default function HomePage() {
   return (
     <>
       <div className="navbar">
+        <span className="applogo tossface" aria-hidden="true">
+          🍚
+        </span>
         <h1>한끼</h1>
         <DongButton />
         <button className="act" onClick={() => open(<HelpSheet />)}>
@@ -71,55 +73,33 @@ export default function HomePage() {
       </div>
 
       <div className="screenBody">
-        <div className="greet">
-          <p className="hi">
-            {DEMO_USER_NAME}님, 오늘도
-            <br />
-            급식카드 쓸 수 있어요
-          </p>
-          <span className="pill ok">
-            <span className="d" />
-            오늘 사용 가능 · {CARD_USABLE_UNTIL}까지
-          </span>
-        </div>
-
-        <div className="card">
-          <p className="lbl">이번 달 남은 금액</p>
+        <div className="block fade">
+          <p className="blabel">이번 달 남은 돈</p>
           <p className="amount">
             <b>{balance.toLocaleString()}</b>
             <span>원</span>
-          </p>
-          <p className="sub">
-            {now.getMonth() + 1}월 · 남은 사용 가능일 {remainingDays}일
           </p>
           <div className="meter">
             <div className="track">
               <div className="fill" style={{ width: `${elapsedPct}%` }} />
             </div>
-            <div className="legend">
-              <span>
-                이번 달 경과 <b>{elapsedDays}일</b>
-              </span>
-              <span>
-                남은 기간 <b>{remainingDays}일</b>
-              </span>
-            </div>
           </div>
+          <p className="bdays">
+            앞으로 <b>{remainingDays}일</b> 쓸 수 있어
+          </p>
           {expiringAmount > 0 ? (
-            <div className="alert warn">
+            <div className="innerbox warn">
               <WarnIcon size={15} />
               <span>
-                이대로면 <b>{expiringAmount.toLocaleString()}원</b>이{" "}
-                {cycleEnd.getMonth() + 1}월 {cycleEnd.getDate()}일에 사라져요. 하루{" "}
-                <b>{dailyRecommended.toLocaleString()}원</b>씩 쓰면 딱 맞아요.
+                이대로면 <b>{expiringAmount.toLocaleString()}원</b>이 {cycleEnd.getMonth() + 1}월{" "}
+                {cycleEnd.getDate()}일에 사라져. 하루 <b>{dailyRecommended.toLocaleString()}원</b>이 기준
               </span>
             </div>
           ) : (
-            <div className="alert good">
+            <div className="innerbox">
               <CheckIcon size={16} />
               <span>
-                이 속도면 <b>사라지는 돈 없이</b> 다 쓸 수 있어요. 하루{" "}
-                <b>{dailyRecommended.toLocaleString()}원</b>이 기준이에요.
+                사라지는 돈 없이 다 쓸 수 있어. 하루 <b>{dailyRecommended.toLocaleString()}원</b>이 기준
               </span>
             </div>
           )}
@@ -128,73 +108,47 @@ export default function HomePage() {
           </button>
         </div>
 
+        <div className="tiles">
+          <Link className="tile t-y" href="/result">
+            <span className="sticker tossface">🍚</span>
+            <span className="tt">오늘 뭐 먹지</span>
+            <span className="ts">지금 {openableCount}곳 열림</span>
+          </Link>
+          <Link className="tile t-b" href="/cvs">
+            <span className="sticker tossface">🏪</span>
+            <span className="tt">편의점 조합</span>
+            <span className="ts">{cvsOpenCount}곳 열림, 조합 3개</span>
+          </Link>
+          <Link className="tile t-p" href="/balance">
+            <span className="sticker tossface">💳</span>
+            <span className="tt">잔액 입력</span>
+            <span className="ts">
+              {lastUpdatedISO ? `마지막 ${formatDate(lastUpdatedISO)}` : "아직 입력 안 함"}
+            </span>
+          </Link>
+          <Link className="tile t-k" href="/welfare">
+            <span className="sticker tossface">🎁</span>
+            <span className="tt">혜택 찾기</span>
+            <span className="ts">새로 찾은 {newBenefitCount}개</span>
+          </Link>
+        </div>
+
         {favoriteInDong ? (
-          <Link className="rowbtn" href={`/store/${favoriteInDong.id}`}>
-            <span className="ic">❤️</span>
+          <Link className="favrow" href={`/store/${favoriteInDong.id}`}>
+            <span className="sticker tossface">❤️</span>
             <span>
-              <p className="t">지난번 갔던 {favoriteInDong.name}</p>
-              <p className="s">
+              <span className="tt">지난번 갔던 {favoriteInDong.name}</span>
+              <span className="ts">
                 {isOpenNow(favoriteInDong, now, hourOverride)
                   ? "지금 영업 중"
                   : `${favoriteInDong.hours.open}에 열어요`}
-              </p>
+              </span>
             </span>
             <span className="ch">
               <ChevronIcon size={16} />
             </span>
           </Link>
         ) : null}
-
-        <div className="actions">
-          <Link className="rowbtn" href="/result">
-            <span className="ic">🍚</span>
-            <span>
-              <p className="t">오늘 뭐 먹지?</p>
-              <p className="s">
-                {openableCount > 0
-                  ? `${dong}에 지금 열린 곳 ${openableCount}곳`
-                  : "식당은 닫혔어요 — 편의점 조합을 알려드릴게요"}
-              </p>
-            </span>
-            <span className="ch">
-              <ChevronIcon size={16} />
-            </span>
-          </Link>
-          <Link className="rowbtn" href="/cvs">
-            <span className="ic">🏪</span>
-            <span>
-              <p className="t">편의점에서 균형 있게</p>
-              <p className="s">지금 열린 편의점 {cvsOpenCount}곳 · 1만 원 안 조합 3개</p>
-            </span>
-            <span className="ch">
-              <ChevronIcon size={16} />
-            </span>
-          </Link>
-          <Link className="rowbtn" href="/balance">
-            <span className="ic">💳</span>
-            <span>
-              <p className="t">잔액 입력하기</p>
-              <p className="s">
-                {lastUpdatedISO
-                  ? `${formatDate(lastUpdatedISO)}에 마지막으로 입력했어요`
-                  : "아직 입력한 적 없어요"}
-              </p>
-            </span>
-            <span className="ch">
-              <ChevronIcon size={16} />
-            </span>
-          </Link>
-          <Link className="rowbtn" href="/welfare">
-            <span className="ic">🎁</span>
-            <span>
-              <p className="t">받을 수 있는 혜택</p>
-              <p className="s">새로 찾은 제도 {newBenefitCount}개</p>
-            </span>
-            <span className="ch">
-              <ChevronIcon size={16} />
-            </span>
-          </Link>
-        </div>
       </div>
 
       <TabBar />
