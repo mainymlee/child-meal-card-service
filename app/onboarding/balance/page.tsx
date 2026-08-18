@@ -19,7 +19,7 @@ export default function OnboardingBalancePage() {
 
   return (
     <main>
-      <div className="ob fade">
+      <div className="ob fade balanceOnboarding">
       <div className="steps">
         <i className="on" />
         <i className="on" />

@@ -1982,7 +1982,19 @@ body {
 .reccard { background: var(--purple); border: var(--bd); box-shadow: var(--shadow-sm); }
 
 .composer { border-top: 2.5px solid var(--ink); }
-.composer input { border: 2px solid var(--ink); color: var(--ink); }
+.composer {
+  width: 100%;
+  min-width: 0;
+  padding-left: max(12px, env(safe-area-inset-left));
+  padding-right: max(14px, env(safe-area-inset-right));
+}
+.composer input {
+  width: 0;
+  min-width: 0;
+  flex: 1 1 0;
+  border: 2px solid var(--ink);
+  color: var(--ink);
+}
 .composer .send { background: var(--yellow); color: var(--ink); border: 2px solid var(--ink); box-shadow: 2px 2px 0 var(--ink); }
 
 .quickamt button,
@@ -2088,6 +2100,41 @@ body {
 
 .mePage .pill.neu {
   background: rgba(255, 255, 255, 0.72);
+}
+
+/* Keep the first balance entry usable without vertical scrolling on phones. */
+.balanceOnboarding .quickamt {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+  width: 100%;
+}
+
+.balanceOnboarding .quickamt button {
+  min-width: 0;
+  padding-inline: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+@media (max-height: 760px) and (max-width: 430px) {
+  .balanceOnboarding {
+    padding: 14px 18px calc(10px + env(safe-area-inset-bottom));
+  }
+
+  .balanceOnboarding .steps { margin-bottom: 14px; }
+  .balanceOnboarding h2 { font-size: 22px; margin-bottom: 5px; }
+  .balanceOnboarding .desc { font-size: 13px; line-height: 1.4; margin-bottom: 8px; }
+  .balanceOnboarding .bigin { margin: 5px 0 2px; }
+  .balanceOnboarding .bigin .v { font-size: 34px; }
+  .balanceOnboarding .quickamt { margin: 7px 0 2px; }
+  .balanceOnboarding .quickamt button { min-height: 34px; font-size: 11px; }
+  .balanceOnboarding .pad { gap: 2px; margin: 7px 0; }
+  .balanceOnboarding .pad button { min-height: 43px; font-size: 19px; }
+  .balanceOnboarding .pad .fn { font-size: 12px; }
+  .balanceOnboarding .grow { min-height: 2px; }
+  .balanceOnboarding > .btn { min-height: 44px; }
+  .balanceOnboarding .skiplink { min-height: 36px; padding: 8px 0 0; font-size: 13px; }
 }
 
 /* Bottom sheets use the same paper-and-ink construction as v10. */
