@@ -59,6 +59,17 @@ export interface MealLogEntry {
   eatenAt: string | null;
 }
 
+export type FeedbackReason = "taste" | "distance" | "price" | "portion" | "spicy" | "repeat";
+
+export interface MealFeedback {
+  storeId: string;
+  grp: NutritionGroup;
+  menuName: string;
+  satisfaction: -1 | 0 | 1;
+  reason: FeedbackReason | null;
+  createdAt: string;
+}
+
 export interface StoreBadges {
   soloFriendly: boolean;
   takeoutAvailable: boolean;

@@ -28,6 +28,7 @@ import { nowInSeoul } from "@/lib/time";
 import { DEFAULT_DONG, setDong, useDong } from "@/lib/hooks/useDong";
 import { useDemoHour } from "@/lib/hooks/useDemoHour";
 import { useMealLog } from "@/lib/hooks/useMealLog";
+import { useMealFeedback } from "@/lib/hooks/useMealFeedback";
 import { useReports } from "@/lib/hooks/useReports";
 import type { Dong } from "@/lib/types";
 
@@ -43,6 +44,7 @@ export default function ChatPage() {
   const dong = useDong() ?? DEFAULT_DONG;
   const { hourOverride } = useDemoHour();
   const mealLog = useMealLog();
+  const feedback = useMealFeedback();
   const reports = useReports();
   const now = useMemo(() => nowInSeoul(), []);
 
@@ -54,8 +56,9 @@ export default function ChatPage() {
       mealLog,
       home: dongCenter(dong),
       reports,
+      feedback,
     }),
-    [dong, now, hourOverride, mealLog, reports]
+    [dong, now, hourOverride, mealLog, reports, feedback]
   );
 
   const [state, setState] = useState(() => initialChatState(ctx));
@@ -91,7 +94,7 @@ export default function ChatPage() {
       const response = await fetch("/api/recommend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dong, solo, dineMode, mealLog, reports, hourOverride }),
+        body: JSON.stringify({ dong, solo, dineMode, mealLog, feedback, reports, hourOverride }),
       });
       if (!response.ok) throw new Error(`recommendation ${response.status}`);
       const data = await response.json() as { recommendation?: Recommendation };

@@ -6,7 +6,7 @@ import { nowInSeoul } from "@/lib/time";
 import { estimateNutrition } from "@/lib/nutrition";
 import { normalizeMealLog } from "@/lib/mealLog";
 import type { DineMode, Recommendation, SoloAnswer } from "@/lib/chatEngine";
-import type { Dong, NutritionGroup } from "@/lib/types";
+import type { Dong, FeedbackReason, MealFeedback, NutritionGroup } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -15,6 +15,7 @@ type RecommendBody = {
   solo?: unknown;
   dineMode?: unknown;
   mealLog?: unknown;
+  feedback?: unknown;
   reports?: unknown;
   hourOverride?: unknown;
 };
@@ -23,6 +24,33 @@ const NUTRITION_GROUPS: NutritionGroup[] = [
   "백반·정식", "국·찌개", "구이·볶음", "분식", "중식",
   "베이커리", "일식", "양식·돈까스", "편의점", "기타",
 ];
+const FEEDBACK_REASONS: FeedbackReason[] = ["taste", "distance", "price", "portion", "spicy", "repeat"];
+
+function parseFeedback(value: unknown): MealFeedback[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item): MealFeedback[] => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    if (
+      typeof record.storeId !== "string" ||
+      typeof record.grp !== "string" ||
+      !NUTRITION_GROUPS.includes(record.grp as NutritionGroup) ||
+      typeof record.menuName !== "string" ||
+      ![-1, 0, 1].includes(Number(record.satisfaction))
+    ) return [];
+    const reason = FEEDBACK_REASONS.includes(record.reason as FeedbackReason)
+      ? record.reason as FeedbackReason
+      : null;
+    return [{
+      storeId: record.storeId.slice(0, 100),
+      grp: record.grp as NutritionGroup,
+      menuName: record.menuName.slice(0, 100),
+      satisfaction: Number(record.satisfaction) as -1 | 0 | 1,
+      reason,
+      createdAt: typeof record.createdAt === "string" ? record.createdAt : "",
+    }];
+  }).slice(-30);
+}
 
 function isSolo(value: unknown): value is SoloAnswer {
   return value === "혼자" || value === "같이";
@@ -52,6 +80,7 @@ export async function POST(request: Request) {
   const mealLog = normalizeMealLog(body.mealLog)
     .filter((item) => NUTRITION_GROUPS.includes(item.grp))
     .slice(-7);
+  const feedback = parseFeedback(body.feedback);
   const rawReports = body.reports && typeof body.reports === "object" ? body.reports as Record<string, unknown> : {};
   const reports = Object.fromEntries(
     Object.entries(rawReports).slice(0, 2000).map(([id, count]) => [id, Math.max(0, Math.min(99, Number(count) || 0))])
@@ -77,7 +106,7 @@ export async function POST(request: Request) {
   }
 
   const home = dongCenter(dong);
-  const candidates = rankStores(eligible, { mealLog, home, reports }).slice(0, 12).map((store) => ({
+  const candidates = rankStores(eligible, { mealLog, home, reports, feedback }).slice(0, 12).map((store) => ({
     storeId: store.id,
     storeName: store.name,
     nutritionGroup: store.grp,
@@ -123,6 +152,7 @@ export async function POST(request: Request) {
               ...meal,
               nutritionEstimate: meal.menuName ? estimateNutrition(meal.menuName, meal.grp) : null,
             })),
+            recentFeedback: feedback,
           },
           candidates,
         }),

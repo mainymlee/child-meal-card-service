@@ -12,6 +12,7 @@ import { dongCenter } from "@/lib/persona";
 import { DEFAULT_DONG, useDong } from "@/lib/hooks/useDong";
 import { useDemoHour } from "@/lib/hooks/useDemoHour";
 import { useMealLog } from "@/lib/hooks/useMealLog";
+import { useMealFeedback } from "@/lib/hooks/useMealFeedback";
 import { useReports } from "@/lib/hooks/useReports";
 import { distanceMeters, isOpenNow, storesInDong } from "@/lib/stores";
 import { rankStores, verificationStatus } from "@/lib/ranking";
@@ -33,6 +34,7 @@ export default function ResultPage() {
   const dong = useDong() ?? DEFAULT_DONG;
   const { hourOverride } = useDemoHour();
   const mealLog = useMealLog();
+  const feedback = useMealFeedback();
   const reports = useReports();
   const now = useMemo(() => nowInSeoul(), []);
   const home = dongCenter(dong);
@@ -73,8 +75,8 @@ export default function ResultPage() {
     });
     return nearestFirst
       ? [...candidates].sort((a, b) => distanceMeters(home, a) - distanceMeters(home, b))
-      : rankStores(candidates, { mealLog, home, reports });
-  }, [all, cat, filters, nearestFirst, now, hourOverride, home, mealLog, reports]);
+      : rankStores(candidates, { mealLog, home, reports, feedback });
+  }, [all, cat, filters, nearestFirst, now, hourOverride, home, mealLog, reports, feedback]);
 
   const cvsOpenCount = all.filter((s) => s.cat2 === "cvs" && isOpenNow(s, now, hourOverride)).length;
 

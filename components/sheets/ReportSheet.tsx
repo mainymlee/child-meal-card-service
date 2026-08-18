@@ -6,6 +6,7 @@ import { distanceMeters, getStoreById, isOpenNow, storesInDong } from "@/lib/sto
 import { nowInSeoul } from "@/lib/time";
 import { useSheet, useToast } from "@/lib/overlay/OverlayProvider";
 import { useMealLog } from "@/lib/hooks/useMealLog";
+import { useMealFeedback } from "@/lib/hooks/useMealFeedback";
 import { useReports, reportStore } from "@/lib/hooks/useReports";
 import { StoreRow } from "@/components/StoreRow";
 import { verificationStatus } from "@/lib/ranking";
@@ -22,6 +23,7 @@ export function ReportSheet({
 }) {
   const store = getStoreById(storeId);
   const mealLog = useMealLog();
+  const feedback = useMealFeedback();
   const reports = useReports();
   const { close } = useSheet();
   const { show } = useToast();
@@ -31,7 +33,7 @@ export function ReportSheet({
   const home = dongCenter(dong);
   const alt = rankStores(
     storesInDong(dong).filter((s) => s.id !== storeId && isOpenNow(s, now)),
-    { mealLog, home, reports }
+    { mealLog, home, reports, feedback }
   )[0];
 
   const confirm = () => {
