@@ -2029,6 +2029,67 @@ body {
 .switch.on { background: var(--yellow); }
 .switch.on::after { left: 22px; }
 
+/* My page: keep v10's ink-and-pastel language while separating each setting. */
+.meNavbar {
+  background: var(--cream);
+}
+
+.mePage .meCard,
+.mePage .meMenuRow {
+  position: relative;
+  overflow: hidden;
+}
+
+.mePage .meBalanceCard { background: var(--yellow); }
+.mePage .meProfileCard { background: var(--purple); }
+.mePage .meFavoriteCard { background: var(--pink); }
+.mePage .meNotificationCard { background: var(--blue); }
+
+.mePage .meMenuRow {
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.mePage .meMenuRow:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.mePage .meDongRow { background: var(--cream); }
+.mePage .meWelfareRow { background: var(--yellow); }
+.mePage .meReportRow { background: var(--pink); }
+.mePage .meMapRow { background: var(--purple); }
+
+.meEditButton {
+  margin-left: auto;
+  padding: 6px 11px;
+  flex: none;
+  color: var(--paper);
+  background: var(--orange);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 2px 2px 0 var(--ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.meEditButton:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.meEditButton:focus-visible {
+  outline: 3px solid var(--paper);
+  outline-offset: 2px;
+}
+
+.mePage .pill.neu {
+  background: rgba(255, 255, 255, 0.72);
+}
+
 /* Bottom sheets use the same paper-and-ink construction as v10. */
 .dim { background: rgba(23, 21, 28, 0.58); }
 .sheet {

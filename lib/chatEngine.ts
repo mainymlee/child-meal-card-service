@@ -21,6 +21,8 @@ export interface Recommendation {
   storeName: string;
   menuName: string;
   price: number;
+  reason?: string;
+  source?: "ai" | "rules";
 }
 
 export type ChatStep = "menu" | "ask_solo" | "ask_dine_mode" | "result";
@@ -79,7 +81,14 @@ export function recommendStore(ctx: RecommendContext, opts: { solo?: SoloAnswer;
   const top = ranked[0];
   if (!top) return null;
   const item = [...top.menu].filter((m) => m.underBudget).sort((a, b) => a.price - b.price)[0] ?? top.menu[0];
-  return { storeId: top.id, storeName: top.name, menuName: item.name, price: item.price };
+  return {
+    storeId: top.id,
+    storeName: top.name,
+    menuName: item.name,
+    price: item.price,
+    reason: "영업 여부, 거리, 예산과 최근 식사 기록을 함께 고려했어요.",
+    source: "rules",
+  };
 }
 
 function menuQuickReplies(hasOpenFood: boolean): QuickReply[] {

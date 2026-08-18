@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { BalanceProvider } from "@/lib/hooks/useBalance";
 import { DemoHourProvider } from "@/lib/hooks/useDemoHour";
 import { OverlayProvider } from "@/lib/overlay/OverlayProvider";
-import { CookieSync } from "@/components/CookieSync";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -31,7 +30,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <DemoHourProvider>
             <div id="app" className="appShell">
               <OverlayProvider>
-                <CookieSync />
                 {children}
               </OverlayProvider>
             </div>

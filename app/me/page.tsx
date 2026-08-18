@@ -48,12 +48,12 @@ export default function MePage() {
 
   return (
     <>
-      <div className="navbar">
+      <div className="navbar meNavbar">
         <h1>내정보</h1>
       </div>
 
-      <div className="screenBody">
-        <div className="card">
+      <div className="screenBody mePage">
+        <div className="card meCard meBalanceCard">
           <p className="lbl">잔액 요약</p>
           <p className="amount" style={{ fontSize: 28 }}>
             <b>{balance.toLocaleString()}</b>
@@ -67,17 +67,17 @@ export default function MePage() {
           </Link>
         </div>
 
-        <div className="card">
+        <div className="card meCard meProfileCard">
           <div style={{ display: "flex", alignItems: "center" }}>
             <p className="lbl" style={{ margin: 0 }}>
               내 조건
             </p>
             <button
-              className="act"
-              style={{ marginLeft: "auto", padding: 0 }}
+              className="meEditButton"
               onClick={() => open(<ProfileSheet />)}
+              aria-label="내 조건 수정"
             >
-              수정
+              수정하기
             </button>
           </div>
           <p className="sub" style={{ margin: "4px 0 8px" }}>
@@ -89,7 +89,7 @@ export default function MePage() {
           </div>
         </div>
 
-        <button className="mrow" onClick={() => open(<DongSheet />)}>
+        <button className="mrow meMenuRow meDongRow" onClick={() => open(<DongSheet />)}>
           내 동네
           <span className="v">{dong}</span>
           <span className="ch">
@@ -97,7 +97,7 @@ export default function MePage() {
           </span>
         </button>
 
-        <div className="card">
+        <div className="card meCard meFavoriteCard">
           <p className="lbl">단골 가게</p>
           {favoriteStores.length ? (
             favoriteStores.map((store) => (
@@ -115,7 +115,7 @@ export default function MePage() {
           )}
         </div>
 
-        <div className="card">
+        <div className="card meCard meNotificationCard">
           <p className="lbl">알림</p>
           <div className="mrow" style={{ cursor: "default" }}>
             월초 충전 알림
@@ -139,14 +139,14 @@ export default function MePage() {
           </div>
         </div>
 
-        <Link className="mrow" href="/welfare">
+        <Link className="mrow meMenuRow meWelfareRow" href="/welfare">
           받을 수 있는 혜택
           <span className="ch">
             <ChevronIcon size={17} />
           </span>
         </Link>
         <button
-          className="mrow"
+          className="mrow meMenuRow meReportRow"
           onClick={() =>
             open(
               <>
@@ -166,7 +166,7 @@ export default function MePage() {
             <ChevronIcon size={17} />
           </span>
         </button>
-        <button className="mrow" onClick={() => open(<KakaoStatusSheet />)}>
+        <button className="mrow meMenuRow meMapRow" onClick={() => open(<KakaoStatusSheet />)}>
           카카오맵 연결
           <span className="v">{HAS_KAKAO_KEY ? "연결됨" : "약도 모드"}</span>
           <span className="ch">

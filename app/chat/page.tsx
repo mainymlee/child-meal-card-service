@@ -14,7 +14,10 @@ import {
   dongQuickReplies,
   fallbackQuickReplies,
   initialChatState,
+  recommendStore,
   type ChatMessage,
+  type DineMode,
+  type Recommendation,
   type RecommendContext,
 } from "@/lib/chatEngine";
 import { dongCenter } from "@/lib/persona";
@@ -57,6 +60,7 @@ export default function ChatPage() {
 
   const [state, setState] = useState(() => initialChatState(ctx));
   const [input, setInput] = useState("");
+  const [isRecommending, setIsRecommending] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -71,7 +75,69 @@ export default function ChatPage() {
     }));
   };
 
+  const requestAiRecommendation = async (key: "eat" | "togo" | "any", label: string) => {
+    const dineMode: DineMode = key === "eat" ? "가게에서" : key === "togo" ? "포장" : "아무거나";
+    const solo = state.solo;
+    setIsRecommending(true);
+    setState((current) => ({
+      ...current,
+      dineMode,
+      messages: [...current.messages, makeMessage("me", label), makeMessage("bot", "AI가 지금 가장 잘 맞는 한 끼를 고르고 있어요…")],
+      quickReplies: [],
+    }));
+
+    let recommendation: Recommendation | null = null;
+    try {
+      const response = await fetch("/api/recommend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dong, solo, dineMode, mealLog, reports, hourOverride }),
+      });
+      if (!response.ok) throw new Error(`recommendation ${response.status}`);
+      const data = await response.json() as { recommendation?: Recommendation };
+      recommendation = data.recommendation ?? null;
+    } catch {
+      recommendation = recommendStore(ctx, { solo, dineMode });
+    }
+
+    setState((current) => {
+      const withoutLoading = current.messages.slice(0, -1);
+      if (!recommendation) {
+        return {
+          ...current,
+          step: "result",
+          recommendation: null,
+          messages: [...withoutLoading, makeMessage("bot", "지금 조건에 맞는 식당이 없어요. 근처 편의점 조합을 확인해볼까요?")],
+          quickReplies: [
+            { key: "cvs", label: "편의점 조합 보기" },
+            { key: "food", label: "조건 바꿔서 다시" },
+          ],
+        };
+      }
+      const intro = recommendation.source === "ai"
+        ? `AI 추천이에요. ${recommendation.reason}`
+        : `AI 연결이 원활하지 않아 기본 추천을 보여드려요. ${recommendation.reason}`;
+      return {
+        ...current,
+        step: "result",
+        recommendation,
+        messages: [...withoutLoading, makeMessage("bot", intro)],
+        quickReplies: [
+          { key: "map", label: "다른 곳도 볼래요" },
+          { key: "cvs", label: "편의점 조합" },
+          { key: "bal", label: "잔액 알려줘요" },
+        ],
+      };
+    });
+    setIsRecommending(false);
+  };
+
   const handleQuick = (key: string, label: string) => {
+    if (isRecommending) return;
+    if (key === "eat" || key === "togo" || key === "any") {
+      void requestAiRecommendation(key, label);
+      return;
+    }
     if (key === "map") {
       router.push("/result");
       return;
@@ -173,7 +239,7 @@ export default function ChatPage() {
           {state.quickReplies.length > 0 ? (
             <div className="quick">
               {state.quickReplies.map((q) => (
-                <button key={q.key} onClick={() => handleQuick(q.key, q.label)}>
+                <button key={q.key} disabled={isRecommending} onClick={() => handleQuick(q.key, q.label)}>
                   {q.label}
                 </button>
               ))}
@@ -194,6 +260,9 @@ export default function ChatPage() {
               <p className="nm" style={{ margin: "0 0 2px" }}>
                 {recommendedStore.name} · {state.recommendation!.menuName}
               </p>
+              {state.recommendation?.source === "ai" ? (
+                <p className="mt" style={{ margin: "0 0 3px" }}>AI 맞춤 추천</p>
+              ) : null}
               <p className="mt" style={{ margin: "0 0 9px" }}>
                 {state.recommendation!.price.toLocaleString()}원
               </p>
