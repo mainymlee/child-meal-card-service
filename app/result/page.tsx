@@ -94,7 +94,7 @@ export default function ResultPage() {
       <div className="screenBody">
         <CategorySegment active={cat} counts={counts} onChange={setCat} />
 
-        <KakaoMap center={home} markers={markers} />
+        <KakaoMap center={home} markers={markers} locationLabel={dong} />
 
         <div className="chips">
           {(Object.keys(CHIP_LABELS) as FilterKey[]).map((key) => (

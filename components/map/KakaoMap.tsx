@@ -1,8 +1,9 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { SimplifiedCategory } from "@/lib/types";
+import { ExpandIcon, ShrinkIcon, TargetIcon } from "@/components/icons";
 
 const CATEGORY_EMOJI = {
   kr: "🍚",
@@ -25,16 +26,24 @@ interface KakaoMapProps {
   center: { lat: number; lng: number };
   markers: MapMarker[];
   height?: number;
+  locationLabel?: string;
 }
 
 const KAKAO_MAP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
 
-export function KakaoMap({ center, markers, height = 180 }: KakaoMapProps) {
+export function KakaoMap({ center, markers, height = 214, locationLabel }: KakaoMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const overlaysRef = useRef<kakao.maps.CustomOverlay[]>([]);
   const [ready, setReady] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const mapHeight = expanded ? 342 : height;
+
+  const moveToCenter = useCallback(() => {
+    if (!mapRef.current || !window.kakao) return;
+    mapRef.current.setCenter(new window.kakao.maps.LatLng(center.lat, center.lng));
+  }, [center.lat, center.lng]);
 
   const initMap = () => {
     if (!containerRef.current || !window.kakao) return;
@@ -84,12 +93,18 @@ export function KakaoMap({ center, markers, height = 180 }: KakaoMapProps) {
     mapRef.current.setCenter(new window.kakao.maps.LatLng(center.lat, center.lng));
   }, [center.lat, center.lng, ready]);
 
+  useEffect(() => {
+    if (!ready || !mapRef.current) return;
+    mapRef.current.relayout();
+    moveToCenter();
+  }, [expanded, moveToCenter, ready]);
+
   if (!KAKAO_MAP_KEY) {
     return (
       <div
         className="mapwrap round"
         style={{
-          height,
+          height: mapHeight,
           display: "grid",
           placeItems: "center",
           padding: 16,
@@ -110,7 +125,7 @@ export function KakaoMap({ center, markers, height = 180 }: KakaoMapProps) {
       <div
         className="mapwrap round"
         role="status"
-        style={{ height, display: "grid", placeItems: "center", padding: 16, textAlign: "center" }}
+        style={{ height: mapHeight, display: "grid", placeItems: "center", padding: 16, textAlign: "center" }}
       >
         <p className="sub" style={{ margin: 0 }}>
           지도를 불러오지 못했어요.
@@ -122,7 +137,7 @@ export function KakaoMap({ center, markers, height = 180 }: KakaoMapProps) {
   }
 
   return (
-    <div className="mapwrap round" style={{ height }}>
+    <div className={`mapwrap round${expanded ? " big" : ""}`} style={{ height: mapHeight }}>
       <Script
         src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_KEY}&autoload=false`}
         strategy="afterInteractive"
@@ -132,7 +147,20 @@ export function KakaoMap({ center, markers, height = 180 }: KakaoMapProps) {
         }}
         onError={() => setLoadFailed(true)}
       />
-      <div ref={containerRef} className="mapbox" style={{ width: "100%", height }} />
+      <div ref={containerRef} className="mapbox" style={{ width: "100%", height: mapHeight }} />
+      {locationLabel ? <div className="maptip">{locationLabel}</div> : null}
+      <div className="mapctl">
+        <button
+          type="button"
+          aria-label={expanded ? "지도 작게 보기" : "지도 크게 보기"}
+          onClick={() => setExpanded((value) => !value)}
+        >
+          {expanded ? <ShrinkIcon /> : <ExpandIcon />}
+        </button>
+        <button type="button" aria-label="동네 중심으로" onClick={moveToCenter}>
+          <TargetIcon />
+        </button>
+      </div>
     </div>
   );
 }
