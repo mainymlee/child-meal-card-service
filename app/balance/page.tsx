@@ -40,7 +40,7 @@ export default function BalancePage() {
 
   return (
     <>
-      <NavBar title="잔액 입력" backHref="/" />
+      <NavBar title="잔액 입력" backHref="/home" />
 
       <div className="screenBody">
         <div className="bigin">

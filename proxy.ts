@@ -8,6 +8,11 @@ const VISIT_STARTED_COOKIE = "hanki_visit_started";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if (pathname === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/onboarding/dong";
+    return NextResponse.redirect(url);
+  }
   if (pathname.startsWith("/onboarding")) return NextResponse.next();
 
   const visitStarted = request.cookies.get(VISIT_STARTED_COOKIE)?.value === "1";

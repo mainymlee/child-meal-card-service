@@ -215,7 +215,7 @@ export default function ChatPage() {
 
   return (
     <>
-      <NavBar title="한끼 도우미" backHref="/" />
+      <NavBar title="한끼 도우미" backHref="/home" />
 
       <div className="screenBody chatmain" ref={bodyRef}>
         <div className="chat">

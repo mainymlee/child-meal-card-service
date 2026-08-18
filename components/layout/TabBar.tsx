@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { ChatIcon, HomeIcon, MapIcon, UserIcon } from "@/components/icons";
 
 const TABS = [
-  { href: "/", label: "홈", Icon: HomeIcon, isActive: (p: string) => p === "/" },
+  { href: "/home", label: "홈", Icon: HomeIcon, isActive: (p: string) => p === "/home" },
   {
     href: "/result",
     label: "지도",

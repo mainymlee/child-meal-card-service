@@ -89,7 +89,7 @@ export default function ResultPage() {
 
   return (
     <>
-      <NavBar title="오늘 뭐 먹지?" backHref="/" extra={<DongButton />} />
+      <NavBar title="오늘 뭐 먹지?" backHref="/home" extra={<DongButton />} />
 
       <div className="screenBody">
         <CategorySegment active={cat} counts={counts} onChange={setCat} />

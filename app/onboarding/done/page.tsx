@@ -10,7 +10,7 @@ export default function OnboardingDonePage() {
 
   const start = () => {
     markOnboarded();
-    router.replace("/");
+    router.replace("/home");
   };
 
   return (
