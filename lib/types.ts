@@ -95,6 +95,7 @@ export interface Store {
   counterDescription: string;
   badges: StoreBadges;
   menu: MenuItem[];
+  menuSource: "name-derived" | "category-derived" | "unverified";
 }
 
 export interface StoresFile {
@@ -103,6 +104,8 @@ export interface StoresFile {
   count: number;
   placeholderCoordinates: boolean;
   stores: Store[];
+  menuRefinedAt?: string;
+  menuSourceCounts?: Record<string, number>;
 }
 
 export interface WelfarePolicy {

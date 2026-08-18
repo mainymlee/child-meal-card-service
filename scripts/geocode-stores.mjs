@@ -18,6 +18,7 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { parse } from "csv-parse/sync";
+import { deriveMenuProfile } from "./menu-rules.mjs";
 
 const CSV_PATH = "data/raw/춘천시_아동급식카드_가맹점_20250714.csv";
 const OUT_PATH = "data/stores.json";
@@ -157,68 +158,6 @@ const HOURS_TEMPLATES = {
   편의점: [{ open: "00:00", close: "24:00" }],
 };
 
-const MENU_TEMPLATES = {
-  한식: [
-    ["제육백반", 9000],
-    ["된장찌개 정식", 8500],
-    ["고등어구이 백반", 9500],
-    ["김치찌개", 8000],
-    ["순두부찌개", 8500],
-    ["불고기 정식", 12000],
-    ["비빔밥", 8500],
-    ["갈비탕", 11000],
-  ],
-  일반대중음식: [
-    ["돈까스", 9000],
-    ["오므라이스", 8500],
-    ["카레라이스", 8000],
-    ["떡볶이 세트", 7000],
-    ["김밥+라면", 7500],
-    ["돌솥비빔밥", 9500],
-  ],
-  중식: [
-    ["짜장면", 7000],
-    ["짬뽕", 8500],
-    ["볶음밥", 8000],
-    ["탕수육(소)", 13000],
-    ["짜장밥", 7500],
-  ],
-  제과점: [
-    ["샌드위치 세트", 7000],
-    ["단팥빵+우유", 4500],
-    ["크로크무슈", 6500],
-    ["베이글 세트", 7500],
-  ],
-  일식: [
-    ["돈부리", 9500],
-    ["우동세트", 8500],
-    ["규동", 9000],
-    ["초밥세트", 12000],
-  ],
-  양식: [
-    ["토마토파스타", 9500],
-    ["함박스테이크", 11500],
-    ["리조또", 10500],
-  ],
-  패스트푸드: [
-    ["햄버거 세트", 7500],
-    ["치킨버거 세트", 8000],
-    ["샌드위치 세트", 7000],
-  ],
-  편의점: [
-    ["도시락(제육)", 5500],
-    ["도시락(닭가슴살)", 6000],
-    ["샌드위치", 3200],
-    ["주먹밥", 2500],
-    ["흰우유 500ml", 1800],
-    ["두유", 1500],
-    ["바나나 2입", 2200],
-    ["삶은계란 2입", 2400],
-    ["방울토마토", 2800],
-    ["컵과일", 3000],
-  ],
-};
-
 const COUNTER_TEMPLATES = {
   한식: ["테이블 주문 · 혼밥 손님 많음", "테이블 주문 · 반찬 리필", "카운터 주문 · 혼밥 편함"],
   일반대중음식: ["카운터 주문 · 포장 가능", "테이블 주문 · 아이 놀이방"],
@@ -237,14 +176,8 @@ function fabricate(row, neighborhood, rng) {
   const hoursOptions = HOURS_TEMPLATES[category] || HOURS_TEMPLATES["한식"];
   const hours = hoursOptions[Math.floor(rng() * hoursOptions.length)];
 
-  const menuPool = MENU_TEMPLATES[category] || MENU_TEMPLATES["한식"];
-  const shuffled = [...menuPool].sort(() => rng() - 0.5);
-  const count = 3 + Math.floor(rng() * 2); // 3-4 items
-  const menu = shuffled.slice(0, count).map(([name, price]) => ({
-    name,
-    price,
-    underBudget: price <= 10000,
-  }));
+  const menuProfile = deriveMenuProfile(row["가맹점명"], category);
+  const menu = menuProfile.menu;
 
   const soloFriendly = isCvs ? true : rng() < 0.8;
   const takeoutAvailable = isCvs ? true : rng() < 0.85;
@@ -264,12 +197,13 @@ function fabricate(row, neighborhood, rng) {
   const counterDescription = counterPool[Math.floor(rng() * counterPool.length)];
 
   const grpPool = CATEGORY_TO_GRP_POOL[category] || CATEGORY_TO_GRP_POOL["한식"];
-  const grp = grpPool[Math.floor(rng() * grpPool.length)];
+  const grp = menuProfile.grp ?? grpPool[Math.floor(rng() * grpPool.length)];
   const cat2 = CATEGORY_TO_CAT2[category] || "kr";
 
   return {
     hours,
     menu,
+    menuSource: menuProfile.menuSource,
     cat2,
     grp,
     closedDays,
@@ -361,6 +295,7 @@ async function main() {
     const {
       hours,
       menu,
+      menuSource,
       cat2,
       grp,
       closedDays,
@@ -388,6 +323,7 @@ async function main() {
       counterDescription,
       badges,
       menu,
+      menuSource,
     });
   }
 
@@ -396,6 +332,11 @@ async function main() {
     sourceFile: CSV_PATH,
     count: stores.length,
     placeholderCoordinates: !usingKakao,
+    menuRefinedAt: new Date().toISOString(),
+    menuSourceCounts: stores.reduce((counts, store) => {
+      counts[store.menuSource] = (counts[store.menuSource] || 0) + 1;
+      return counts;
+    }, {}),
     stores,
   };
 

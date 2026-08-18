@@ -60,7 +60,9 @@ function me(text: string): ChatMessage {
 }
 
 export function recommendStore(ctx: RecommendContext, opts: { solo?: SoloAnswer; dineMode?: DineMode }): Recommendation | null {
-  const openNow = ctx.stores.filter((s) => isOpenNow(s, ctx.now, ctx.hourOverride) && s.cat2 !== "cvs");
+  const openNow = ctx.stores.filter((s) =>
+    isOpenNow(s, ctx.now, ctx.hourOverride) && s.cat2 !== "cvs" && s.menu.length > 0
+  );
   if (!openNow.length) return null;
 
   let candidates = openNow;

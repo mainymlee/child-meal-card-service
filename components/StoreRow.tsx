@@ -38,7 +38,9 @@ export function StoreRow({
       <div>
         <p className="nm">{store.name}</p>
         <p className="mt">
-          {store.category} · {item.name} {item.price.toLocaleString()}원
+          {store.category} · {item
+            ? `${item.name} ${item.price.toLocaleString()}원 예상`
+            : "메뉴 확인 필요"}
         </p>
         <StoreBadgePills
           openNow={openNow}

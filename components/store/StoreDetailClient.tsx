@@ -104,20 +104,28 @@ export function StoreDetailClient({ store }: { store: Store }) {
         </dl>
 
         <div className="card" style={{ marginTop: 16 }}>
-          <p className="lbl">1만 원 안에 되는 메뉴</p>
-          <ul className="menu">
-            {store.menu.map((item) => (
-              <li key={item.name}>
-                <span>{item.name}</span>
-                <span className={`p ${item.underBudget ? "ok" : "over"}`}>
-                  {item.price.toLocaleString()}원
-                </span>
-              </li>
-            ))}
-          </ul>
+          <p className="lbl">
+            {store.menuSource === "unverified" ? "메뉴 확인 필요" : "가게명·업종 기반 예상 메뉴"}
+          </p>
+          {store.menu.length ? (
+            <ul className="menu">
+              {store.menu.map((item) => (
+                <li key={item.name}>
+                  <span>{item.name}</span>
+                  <span className={`p ${item.underBudget ? "ok" : "over"}`}>
+                    약 {item.price.toLocaleString()}원
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="sub" style={{ margin: 0 }}>
+              가게 이름과 업종만으로 판매 메뉴를 판단하기 어려워요. 확인 전에는 추천에 사용하지 않아요.
+            </p>
+          )}
         </div>
         <p className="sub" style={{ fontSize: 12.5, color: "var(--g400)", margin: "-4px 2px 12px" }}>
-          가게 이름·위치·영업시간은 실제 정보, 메뉴·가격은 예시값이에요.
+          메뉴와 가격은 실제 메뉴판이 아닌 예상값이며 방문 전 가게에 확인해주세요.
         </p>
 
         {!isCvs && recentRepeats >= 2 ? (
