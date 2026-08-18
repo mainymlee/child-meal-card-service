@@ -11,7 +11,7 @@
 - 영업 여부·혼밥·포장·예산·거리 필터
 - 편의점 균형 식사 조합
 - 가맹점 상세·즐겨찾기·결제 불가 제보
-- AI 기반 한끼 도우미(장애 시 규칙 기반 추천으로 자동 전환)
+- 최근 식사·영양·만족도를 학습하는 자체 메뉴추천 AI
 - 잔액 소진 계획과 복지 정보
 
 ## 기술 구성
@@ -19,7 +19,6 @@
 - Next.js 16 App Router
 - React 19, TypeScript
 - 카카오맵 JavaScript SDK
-- OpenAI Responses API
 - 브라우저 `localStorage` 기반 사용자 설정
 - Vercel 배포
 
@@ -54,14 +53,10 @@ npm run dev
 ```dotenv
 NEXT_PUBLIC_KAKAO_MAP_KEY=
 KAKAO_REST_API_KEY=
-OPENAI_API_KEY=
-OPENAI_RECOMMEND_MODEL=gpt-5-mini
 ```
 
 - `NEXT_PUBLIC_KAKAO_MAP_KEY`: 브라우저 지도 표시에 사용합니다. Vercel Production·Preview 환경에도 등록해야 합니다.
 - `KAKAO_REST_API_KEY`: `npm run geocode` 실행 시에만 사용하는 로컬 전용 키입니다. Vercel에는 등록하지 않습니다.
-- `OPENAI_API_KEY`: 서버의 AI 메뉴 추천에 사용합니다. 브라우저에는 노출되지 않으며 Vercel Production·Preview 환경에 등록해야 합니다.
-- `OPENAI_RECOMMEND_MODEL`: 선택 사항이며 기본값은 `gpt-5-mini`입니다.
 
 카카오 개발자 콘솔의 JavaScript SDK 허용 도메인에는 다음 주소를 등록합니다.
 

@@ -23,7 +23,7 @@ export interface Recommendation {
   menuName: string;
   price: number;
   reason?: string;
-  source?: "ai" | "rules";
+  source?: "local-ai";
 }
 
 export type ChatStep = "menu" | "ask_solo" | "ask_dine_mode" | "result";
@@ -89,8 +89,8 @@ export function recommendStore(ctx: RecommendContext, opts: { solo?: SoloAnswer;
     storeName: top.name,
     menuName: item.name,
     price: item.price,
-    reason: "영업 여부, 거리, 예산과 최근 식사 기록을 함께 고려했어요.",
-    source: "rules",
+    reason: "영양 균형, 거리, 예산과 최근 식사 만족도를 함께 고려했어요.",
+    source: "local-ai",
   };
 }
 
