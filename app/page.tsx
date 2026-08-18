@@ -62,9 +62,8 @@ export default function HomePage() {
   return (
     <>
       <div className="navbar">
-        <span className="applogo tossface" aria-hidden="true">
-          🍚
-        </span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="applogo" src="/app-logo.png" alt="" />
         <h1>한끼</h1>
         <DongButton />
         <button className="act" onClick={() => open(<HelpSheet />)}>

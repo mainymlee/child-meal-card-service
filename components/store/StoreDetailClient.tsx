@@ -1,7 +1,6 @@
 "use client";
 
 import { NavBar } from "@/components/layout/NavBar";
-import { ImgIcon } from "@/components/icons";
 import { StoreBadgePills } from "@/components/Pill";
 import { FavoriteButton } from "@/components/store/FavoriteButton";
 import { ReportButton } from "@/components/store/ReportButton";
@@ -17,6 +16,7 @@ import { nowInSeoul } from "@/lib/time";
 import type { Store } from "@/lib/types";
 
 const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
+const CATEGORY_EMOJI = { kr: "🍚", cn: "🥡", wf: "🍴", bs: "🍢", cvs: "🏪" } as const;
 
 export function StoreDetailClient({ store }: { store: Store }) {
   const { hourOverride } = useDemoHour();
@@ -50,7 +50,7 @@ export function StoreDetailClient({ store }: { store: Store }) {
       />
 
       <div className="screenBody">
-        <div className="hero">{isCvs ? "🏪" : <ImgIcon size={30} />}</div>
+        <div className="hero tossface">{CATEGORY_EMOJI[store.cat2]}</div>
 
         <div style={{ marginBottom: 10 }}>
           <StoreBadgePills

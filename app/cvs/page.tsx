@@ -94,11 +94,10 @@ export default function CvsPage() {
           </span>
         </div>
         {openCvs.length ? (
-          openCvs.map((store, i) => (
+          openCvs.map((store) => (
             <StoreRow
               key={store.id}
               store={store}
-              index={i}
               distance={distanceMeters(home, store)}
               openNow
               verification={verificationStatus(reports, store.id)}

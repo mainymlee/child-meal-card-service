@@ -14,7 +14,8 @@ export default function OnboardingDonePage() {
   };
 
   return (
-    <div className="ob fade" style={{ textAlign: "center", justifyContent: "center" }}>
+    <main>
+      <div className="ob fade" style={{ textAlign: "center", justifyContent: "center" }}>
       <div className="steps">
         <i className="on" />
         <i className="on" />
@@ -32,6 +33,7 @@ export default function OnboardingDonePage() {
       <button className="btn" onClick={start}>
         시작하기
       </button>
-    </div>
+      </div>
+    </main>
   );
 }

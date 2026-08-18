@@ -18,7 +18,8 @@ export default function OnboardingBalancePage() {
   };
 
   return (
-    <div className="ob fade">
+    <main>
+      <div className="ob fade">
       <div className="steps">
         <i className="on" />
         <i className="on" />
@@ -54,6 +55,7 @@ export default function OnboardingBalancePage() {
       <button className="skiplink" onClick={() => router.push("/onboarding/done")}>
         지금은 건너뛰기
       </button>
-    </div>
+      </div>
+    </main>
   );
 }

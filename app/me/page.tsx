@@ -100,11 +100,10 @@ export default function MePage() {
         <div className="card">
           <p className="lbl">단골 가게</p>
           {favoriteStores.length ? (
-            favoriteStores.map((store, i) => (
+            favoriteStores.map((store) => (
               <StoreRow
                 key={store.id}
                 store={store}
-                index={i}
                 distance={distanceMeters(home, store)}
                 openNow={isOpenNow(store, now, hourOverride)}
                 verification={verificationStatus(reports, store.id)}

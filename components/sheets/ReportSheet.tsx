@@ -52,7 +52,6 @@ export function ReportSheet({
           <p className="lbl">대신 여기는 어때요?</p>
           <StoreRow
             store={alt}
-            index={0}
             distance={distanceMeters(home, alt)}
             openNow={isOpenNow(alt, now)}
             verification={verificationStatus(reports, alt.id)}

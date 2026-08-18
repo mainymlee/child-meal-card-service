@@ -23,16 +23,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/toss/tossface/dist/tossface.css"
         />
+        {/* eslint-disable-next-line @next/next/no-css-tags */}
+        <link rel="stylesheet" href="/v10.css" />
       </head>
       <body>
         <BalanceProvider>
           <DemoHourProvider>
-            <OverlayProvider>
-              <CookieSync />
-              <div id="app" className="appShell">
+            <div id="app" className="appShell">
+              <OverlayProvider>
+                <CookieSync />
                 {children}
-              </div>
-            </OverlayProvider>
+              </OverlayProvider>
+            </div>
           </DemoHourProvider>
         </BalanceProvider>
       </body>

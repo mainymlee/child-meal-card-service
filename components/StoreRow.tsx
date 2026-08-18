@@ -2,16 +2,22 @@ import { StoreBadgePills } from "@/components/Pill";
 import { cheapestUnderBudgetItem, walkingMinutes } from "@/lib/stores";
 import type { Store } from "@/lib/types";
 
+const CATEGORY_EMOJI = {
+  kr: "🍚",
+  cn: "🥡",
+  wf: "🍴",
+  bs: "🍢",
+  cvs: "🏪",
+} as const;
+
 export function StoreRow({
   store,
-  index,
   distance,
   openNow,
   verification,
   onClick,
 }: {
   store: Store;
-  index: number;
   distance: number;
   openNow: boolean;
   verification: "ok" | "pending";
@@ -23,10 +29,12 @@ export function StoreRow({
 
   return (
     <button
-      className={`store fade ${isCvs ? "cvsrow " : ""}${pending ? "demoted" : ""}`}
+      className={`store fade cat-${store.cat2} ${isCvs ? "cvsrow " : ""}${pending ? "demoted" : ""}`}
       onClick={onClick}
     >
-      <span className="no">{index + 1}</span>
+      <span className="no tossface" aria-hidden="true">
+        {CATEGORY_EMOJI[store.cat2]}
+      </span>
       <div>
         <p className="nm">{store.name}</p>
         <p className="mt">

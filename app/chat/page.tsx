@@ -154,9 +154,20 @@ export default function ChatPage() {
       <div className="screenBody chatmain" ref={bodyRef}>
         <div className="chat">
           {state.messages.map((m) => (
-            <div key={m.id} className={`msg ${m.from === "me" ? "me" : "bot"}`}>
-              {m.text}
-            </div>
+            m.from === "bot" ? (
+              <div key={m.id} className="botrow fade">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="botava" src="/app-logo.png" alt="" />
+                <div>
+                  <p className="botname">한끼</p>
+                  <div className="msg bot">{m.text}</div>
+                </div>
+              </div>
+            ) : (
+              <div key={m.id} className="msg me fade">
+                {m.text}
+              </div>
+            )
           ))}
 
           {state.quickReplies.length > 0 ? (

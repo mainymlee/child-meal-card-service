@@ -2,12 +2,22 @@
 
 import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
+import type { SimplifiedCategory } from "@/lib/types";
+
+const CATEGORY_EMOJI = {
+  kr: "🍚",
+  cn: "🥡",
+  wf: "🍴",
+  bs: "🍢",
+  cvs: "🏪",
+} as const;
 
 export interface MapMarker {
   id: string;
   lat: number;
   lng: number;
   label: string;
+  category?: SimplifiedCategory;
   onClick?: () => void;
 }
 
@@ -40,21 +50,19 @@ export function KakaoMap({ center, markers, height = 180 }: KakaoMapProps) {
   useEffect(() => {
     if (!ready || !mapRef.current) return;
     overlaysRef.current.forEach((o) => o.setMap(null));
-    overlaysRef.current = markers.map((marker, i) => {
-      const content = document.createElement("button");
-      content.type = "button";
-      content.setAttribute("aria-label", `${marker.label} 상세 보기`);
-      content.title = marker.label;
-      content.style.cssText =
-        "background:var(--primary);color:#fff;font:700 11px system-ui;" +
-        "width:22px;height:22px;border-radius:50% 50% 50% 0;display:grid;" +
-        "place-items:center;transform:rotate(45deg);box-shadow:var(--shadow-sm);" +
-        "border:2px solid var(--surface);cursor:pointer;padding:0";
-      const inner = document.createElement("span");
-      inner.style.transform = "rotate(-45deg)";
-      inner.textContent = String(i + 1);
-      content.appendChild(inner);
-      if (marker.onClick) content.addEventListener("click", marker.onClick);
+    overlaysRef.current = markers.map((marker) => {
+      const content = document.createElement("div");
+      content.className = `kpin cat-${marker.category ?? "kr"}`;
+      const label = document.createElement("button");
+      label.type = "button";
+      label.className = "b";
+      label.setAttribute("aria-label", `${marker.label} 상세 보기`);
+      label.title = marker.label;
+      label.innerHTML = `<span class="tossface">${CATEGORY_EMOJI[marker.category ?? "kr"]}</span>${marker.label}`;
+      if (marker.onClick) label.addEventListener("click", marker.onClick);
+      const tail = document.createElement("div");
+      tail.className = "tail";
+      content.append(label, tail);
 
       const overlay = new window.kakao.maps.CustomOverlay({
         position: new window.kakao.maps.LatLng(marker.lat, marker.lng),
@@ -79,7 +87,7 @@ export function KakaoMap({ center, markers, height = 180 }: KakaoMapProps) {
   if (!KAKAO_MAP_KEY) {
     return (
       <div
-        className="map"
+        className="mapwrap round"
         style={{
           height,
           display: "grid",
@@ -100,7 +108,7 @@ export function KakaoMap({ center, markers, height = 180 }: KakaoMapProps) {
   if (loadFailed) {
     return (
       <div
-        className="map"
+        className="mapwrap round"
         role="status"
         style={{ height, display: "grid", placeItems: "center", padding: 16, textAlign: "center" }}
       >
@@ -114,7 +122,7 @@ export function KakaoMap({ center, markers, height = 180 }: KakaoMapProps) {
   }
 
   return (
-    <div className="map">
+    <div className="mapwrap round" style={{ height }}>
       <Script
         src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_KEY}&autoload=false`}
         strategy="afterInteractive"
@@ -124,7 +132,7 @@ export function KakaoMap({ center, markers, height = 180 }: KakaoMapProps) {
         }}
         onError={() => setLoadFailed(true)}
       />
-      <div ref={containerRef} style={{ width: "100%", height }} />
+      <div ref={containerRef} className="mapbox" style={{ width: "100%", height }} />
     </div>
   );
 }

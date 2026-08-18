@@ -10,7 +10,8 @@ export default function OnboardingDongPage() {
   const dong = useDong();
 
   return (
-    <div className="ob fade">
+    <main>
+      <div className="ob fade">
       <div className="steps">
         <i className="on" />
         <i />
@@ -43,6 +44,7 @@ export default function OnboardingDongPage() {
       >
         다음
       </button>
-    </div>
+      </div>
+    </main>
   );
 }

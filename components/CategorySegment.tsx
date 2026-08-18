@@ -15,11 +15,12 @@ export function CategorySegment({
   onChange: (next: CategoryFilter) => void;
 }) {
   return (
-    <div className="seg" role="tablist" aria-label="음식 카테고리">
+    <div className="catbar" role="tablist" aria-label="음식 카테고리">
       <button
+        data-cat="all"
         role="tab"
         aria-selected={active === "all"}
-        className={active === "all" ? "on" : ""}
+        className={`catchip ${active === "all" ? "on" : ""}`}
         onClick={() => onChange("all")}
       >
         전체 <span className="cnt">{counts.all}</span>
@@ -27,9 +28,10 @@ export function CategorySegment({
       {ORDER.map((cat2) => (
         <button
           key={cat2}
+          data-cat={cat2}
           role="tab"
           aria-selected={active === cat2}
-          className={active === cat2 ? "on" : ""}
+          className={`catchip ${active === cat2 ? "on" : ""}`}
           onClick={() => onChange(cat2)}
         >
           {CAT2_LABELS[cat2]} <span className="cnt">{counts[cat2]}</span>

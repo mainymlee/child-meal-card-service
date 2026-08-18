@@ -83,6 +83,7 @@ export default function ResultPage() {
     lat: store.lat,
     lng: store.lng,
     label: store.name,
+    category: store.cat2,
     onClick: () => router.push(`/store/${store.id}`),
   }));
 
@@ -145,11 +146,10 @@ export default function ResultPage() {
             </button>
           </div>
         ) : (
-          list.map((store, i) => (
+          list.map((store) => (
             <StoreRow
               key={store.id}
               store={store}
-              index={i}
               distance={distanceMeters(home, store)}
               openNow={isOpenNow(store, now, hourOverride)}
               verification={verificationStatus(reports, store.id)}
