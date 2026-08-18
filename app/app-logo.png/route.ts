@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-const SOURCE_FILE = "한끼_웹앱_v10 (1).html";
+const SOURCE_FILE = "docs/prototypes/한끼_웹앱_v10.html";
 
 export async function GET() {
   const html = await readFile(path.join(process.cwd(), SOURCE_FILE), "utf8");

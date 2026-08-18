@@ -1,16 +1,41 @@
-# 한끼 — 결식아동 급식카드 지원 서비스
+# 한끼
 
-기획서(`docs/결식아동_급식카드_기획서_개정1_20260814본.md`)와 UI 프로토타입(`docs/UI_프로토타입.html`)을 바탕으로 만든 Next.js 앱. 로그인 없이 단일 데모 페르소나(김지민)로 동작하며, 잔액은 브라우저 localStorage에 저장된다.
+춘천시 아동급식카드 사용자가 지금 이용할 수 있는 가맹점을 찾고, 균형 있는 메뉴와 잔액 사용 계획, 관련 복지 정보를 확인하는 모바일 웹앱입니다.
 
-**배포:** https://child-meal-card-service.vercel.app
+배포 주소: <https://child-meal-card-service.vercel.app>
+
+## 주요 기능
+
+- 동네·잔액 설정 온보딩
+- 카카오맵 기반 급식카드 가맹점 탐색
+- 영업 여부·혼밥·포장·예산·거리 필터
+- 편의점 균형 식사 조합
+- 가맹점 상세·즐겨찾기·결제 불가 제보
+- 규칙 기반 한끼 도우미
+- 잔액 소진 계획과 복지 정보
+
+## 기술 구성
+
+- Next.js 16 App Router
+- React 19, TypeScript
+- 카카오맵 JavaScript SDK
+- 브라우저 `localStorage` 기반 사용자 설정
+- Vercel 배포
 
 ## 폴더 구조
 
+```text
+app/                 Next.js 페이지와 동적 디자인 자산
+components/          공통 UI, 지도, 시트, 가맹점 컴포넌트
+lib/                 상태 관리와 추천·잔액·복지 로직
+data/                가맹점·복지 JSON 및 원본 CSV
+docs/                기획서, 제안서, 워크시트, UI 원본
+docs/prototypes/     수정하지 않는 v10 디자인 기준 HTML
+scripts/             가맹점 지오코딩 스크립트
+types/               카카오맵 타입 선언
 ```
-app/ components/ lib/ data/ scripts/ types/   # Next.js 앱 (루트에 있어야 함)
-docs/                                          # 기획서, 워크시트, UI 프로토타입 — 참고용, 앱 코드 아님
-data/raw/                                      # 원본 CSV (지오코딩 스크립트 입력)
-```
+
+디자인 기준 파일은 `docs/prototypes/한끼_웹앱_v10.html`입니다. 원본을 수정하지 않고 CSS와 로고를 Next.js 응답에서 읽어 사용합니다.
 
 ## 로컬 실행
 
@@ -19,37 +44,47 @@ npm install
 npm run dev
 ```
 
-`http://localhost:3000` 에서 확인. `.env.local`에 카카오맵 키가 없으면 지도 자리에 안내 문구가 대신 표시되고 나머지 기능은 정상 동작한다.
+브라우저에서 <http://localhost:3000>을 엽니다.
 
-## 카카오맵 키 설정 (지도를 실제로 보려면 필요)
+## 환경변수
 
-1. [카카오 개발자](https://developers.kakao.com)에서 애플리케이션을 만들고 **제품 설정 > 카카오맵**을 켠다.
-2. **앱 설정 > 플랫폼 키 > JavaScript 키**를 복사해 `.env.local`의 `NEXT_PUBLIC_KAKAO_MAP_KEY`에 넣는다 (`.env.example` 참고).
-3. 같은 화면의 **JavaScript SDK 도메인**에 `http://localhost:3000`을 등록한다. 등록하지 않으면 지도가 브라우저 콘솔 에러만 내고 조용히 안 뜬다.
-4. Vercel에 배포할 때는 배포 도메인(`*.vercel.app` 등)도 같은 목록에 추가로 등록하고, `NEXT_PUBLIC_KAKAO_MAP_KEY`를 Vercel 프로젝트의 Production/Preview 환경변수에도 등록한다.
-5. `NEXT_PUBLIC_*` 환경변수는 **빌드 시점**에 코드에 박히므로, Vercel에서 값을 새로 넣거나 바꾼 뒤에는 반드시 **Redeploy**해야 반영된다 — 그냥 두면 예전 값(또는 빈 값)으로 빌드된 상태가 계속 서빙된다.
+`.env.example`을 참고해 `.env.local`을 만듭니다.
 
-## 가맹점 데이터 재생성 (선택)
+```dotenv
+NEXT_PUBLIC_KAKAO_MAP_KEY=
+KAKAO_REST_API_KEY=
+```
 
-`data/stores.json`은 이미 카카오 REST API로 지오코딩한 실제 좌표로 커밋되어 있다 (306개 중 302개 성공, 4개는 CSV 주소 오탈자로 실패 — `scripts/geocode-failures.json` 참고). 원본 CSV가 갱신되거나 다시 만들고 싶으면:
+- `NEXT_PUBLIC_KAKAO_MAP_KEY`: 브라우저 지도 표시에 사용합니다. Vercel Production·Preview 환경에도 등록해야 합니다.
+- `KAKAO_REST_API_KEY`: `npm run geocode` 실행 시에만 사용하는 로컬 전용 키입니다. Vercel에는 등록하지 않습니다.
 
-1. **앱 설정 > 플랫폼 키 > REST API 키**를 `.env.local`의 `KAKAO_REST_API_KEY`에 넣는다.
-2. 실행:
-   ```bash
-   npm run geocode
-   ```
-3. `data/stores.json`이 `data/raw/춘천시_아동급식카드_가맹점_20250714.csv`를 기준으로 다시 생성된다.
+카카오 개발자 콘솔의 JavaScript SDK 허용 도메인에는 다음 주소를 등록합니다.
 
-이 스크립트는 로컬에서 실행하는 용도로, Vercel 빌드 시에는 실행되지 않는다 (카카오 API 쿼터를 배포마다 소모하지 않기 위함).
+- `http://localhost:3000`
+- `https://child-meal-card-service.vercel.app`
+- 사용하는 Preview 또는 사용자 지정 도메인
 
-## Vercel 배포
+`NEXT_PUBLIC_*` 값은 빌드 시 번들에 포함되므로 변경 후 Vercel에서 재배포해야 합니다.
 
-1. 저장소를 Vercel에 연결한다 (Next.js App Router는 별도 설정 없이 자동 인식됨).
-2. Vercel 프로젝트 설정 > Environment Variables에 `NEXT_PUBLIC_KAKAO_MAP_KEY`를 등록한다.
-3. 카카오 개발자 콘솔의 JavaScript SDK 도메인 목록에 배포 도메인을 추가한다.
-4. 환경변수를 나중에 추가/수정했다면 **Redeploy**를 한 번 더 실행한다.
-5. 배포 후 지도가 뜨는지, 브라우저 콘솔에 에러가 없는지 확인한다.
+## 가맹점 데이터
 
-## 하지 않는 것
+- `data/stores.json`: 앱에서 사용하는 좌표 포함 가맹점 데이터
+- `data/raw/춘천시_아동급식카드_가맹점_20250714.csv`: 데이터 생성 기준 원본
+- 현재 앱 데이터: 1,372개 가맹점, 모두 유효 좌표 보유
 
-로그인/멀티유저, DB, 카드사 실시간 잔액 연동, 복지 신청 대행, 보호자 모니터링, 실시간 영업정보 동기화, 실제 길찾기 API — `docs/결식아동_급식카드_기획서_개정1_20260814본.md` 5장(Non-goals) 참고.
+원본 CSV를 갱신한 뒤 좌표를 다시 생성하려면 다음 명령을 실행합니다.
+
+```bash
+npm run geocode
+```
+
+## 검증
+
+```bash
+npm run lint
+npm run build
+```
+
+## MVP 제외 범위
+
+회원가입, 서버 데이터베이스, 카드사 실시간 잔액·결제 연동, 복지 신청 대행, 보호자 모니터링, 실제 푸시 알림은 포함하지 않습니다.
