@@ -28,6 +28,35 @@ const CHIP_LABELS: Record<FilterKey, string> = {
 };
 
 const MAX_MARKERS = 14;
+const CHOSEONG = ["ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
+const CHOSEONG_NORMALIZE: Record<string, string> = { ㄲ: "ㄱ", ㄸ: "ㄷ", ㅃ: "ㅂ", ㅆ: "ㅅ", ㅉ: "ㅈ" };
+
+function compact(value: string) {
+  return value.replace(/\s/g, "").toLocaleLowerCase("ko-KR");
+}
+
+function choseong(value: string) {
+  return [...value].map((character) => {
+    const code = character.charCodeAt(0);
+    return code >= 0xac00 && code <= 0xd7a3
+      ? CHOSEONG[Math.floor((code - 0xac00) / 588)]
+      : character === " " ? "" : character;
+  }).join("");
+}
+
+function normalizeChoseong(value: string) {
+  return [...value].map((character) => CHOSEONG_NORMALIZE[character] ?? character).join("");
+}
+
+function matchesSearch(store: ReturnType<typeof storesInDong>[number], query: string) {
+  const normalizedQuery = compact(query);
+  if (!normalizedQuery) return true;
+  const searchable = [store.name, store.address, ...store.menu.map((menu) => menu.name)];
+  return searchable.some((value) => {
+    if (compact(value).includes(normalizedQuery)) return true;
+    return normalizeChoseong(choseong(value)).includes(normalizeChoseong(normalizedQuery));
+  });
+}
 
 export default function ResultPage() {
   const router = useRouter();
@@ -47,6 +76,7 @@ export default function ResultPage() {
     cheap: true,
   });
   const [nearestFirst, setNearestFirst] = useState(false);
+  const [query, setQuery] = useState("");
 
   const toggle = (key: FilterKey) => setFilters((f) => ({ ...f, [key]: !f[key] }));
 
@@ -71,12 +101,13 @@ export default function ResultPage() {
       if (filters.solo && !s.badges.soloFriendly) return false;
       if (filters.togo && !s.badges.takeoutAvailable) return false;
       if (filters.cheap && !s.menu.some((m) => m.underBudget)) return false;
+      if (!matchesSearch(s, query)) return false;
       return true;
     });
     return nearestFirst
       ? [...candidates].sort((a, b) => distanceMeters(home, a) - distanceMeters(home, b))
       : rankStores(candidates, { mealLog, home, reports, feedback });
-  }, [all, cat, filters, nearestFirst, now, hourOverride, home, mealLog, reports, feedback]);
+  }, [all, cat, filters, nearestFirst, now, hourOverride, home, mealLog, reports, feedback, query]);
 
   const cvsOpenCount = all.filter((s) => s.cat2 === "cvs" && isOpenNow(s, now, hourOverride)).length;
 
@@ -94,6 +125,26 @@ export default function ResultPage() {
       <NavBar title="오늘 뭐 먹지?" backHref="/home" extra={<DongButton />} />
 
       <div className="screenBody">
+        <div className="searchbar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
+          </svg>
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="가게·메뉴 검색 · 초성도 돼요 (ㅊㅁㅁㅇ)"
+            autoComplete="off"
+            aria-label="가게 또는 메뉴 검색"
+          />
+          {query ? (
+            <button className="clear" aria-label="검색어 지우기" onClick={() => setQuery("")}>
+              ×
+            </button>
+          ) : null}
+        </div>
+
         <CategorySegment active={cat} counts={counts} onChange={setCat} />
 
         <KakaoMap center={home} markers={markers} locationLabel={dong} />
@@ -137,15 +188,19 @@ export default function ResultPage() {
         {list.length === 0 ? (
           <div className="empty">
             <div className="big">🌙</div>
-            <h3>지금 조건에 맞는 곳이 없어요</h3>
+            <h3>{query ? "검색 결과가 없어요" : "지금 조건에 맞는 곳이 없어요"}</h3>
             <p>
-              {dong} 기준 · 조건을 바꾸거나,
-              <br />
-              근처 편의점 조합을 확인해보세요.
+              {query ? "다른 이름이나 초성으로 다시 찾아보세요." : <>{dong} 기준 · 조건을 바꾸거나,<br />근처 편의점 조합을 확인해보세요.</>}
             </p>
-            <button className="btn sm" style={{ width: "auto", padding: "0 22px", margin: "0 auto" }} onClick={() => router.push("/cvs")}>
-              편의점에서 균형 있게 먹기
-            </button>
+            {query ? (
+              <button className="btn sm" style={{ width: "auto", padding: "0 22px", margin: "0 auto" }} onClick={() => setQuery("")}>
+                검색어 지우기
+              </button>
+            ) : (
+              <button className="btn sm" style={{ width: "auto", padding: "0 22px", margin: "0 auto" }} onClick={() => router.push("/cvs")}>
+                편의점에서 균형 있게 먹기
+              </button>
+            )}
           </div>
         ) : (
           list.map((store) => (

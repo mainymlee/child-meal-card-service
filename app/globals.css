@@ -1878,6 +1878,55 @@ body {
 }
 
 /* Filters, map and store results */
+.searchbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  margin: 4px 0 12px;
+  padding: 0 13px;
+  color: var(--ink);
+  background: var(--paper);
+  border: var(--bd);
+  border-radius: 15px;
+  box-shadow: var(--shadow-sm);
+}
+
+.searchbar svg { width: 17px; height: 17px; flex: none; color: #847f90; }
+.searchbar input {
+  width: 0;
+  min-width: 0;
+  flex: 1 1 0;
+  min-height: 44px;
+  padding: 0;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  outline: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+.searchbar input::-webkit-search-cancel-button { display: none; }
+.searchbar input::placeholder { color: #9a94a6; font-weight: 500; }
+.searchbar .clear {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  padding: 0;
+  color: var(--ink);
+  background: var(--yellow);
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
 .chip,
 .catchip {
   color: var(--ink);
