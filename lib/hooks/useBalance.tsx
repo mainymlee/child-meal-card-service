@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useSyncExternalStore } from "react";
-import { PERSONA } from "@/lib/persona";
+import { DEFAULT_STARTING_BALANCE } from "@/lib/persona";
 import { writeLocalStorage } from "@/lib/storage";
 
 const STORAGE_KEY = "hanki:balance";
@@ -12,7 +12,7 @@ interface StoredBalance {
 }
 
 const DEFAULT_BALANCE: StoredBalance = {
-  balance: PERSONA.startingBalance,
+  balance: DEFAULT_STARTING_BALANCE,
   lastUpdatedISO: "",
 };
 

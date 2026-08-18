@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { BalanceProvider } from "@/lib/hooks/useBalance";
+import { DemoHourProvider } from "@/lib/hooks/useDemoHour";
+import { OverlayProvider } from "@/lib/overlay/OverlayProvider";
+import { CookieSync } from "@/components/CookieSync";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -10,9 +13,23 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko">
+      <head>
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="" />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+        />
+      </head>
       <body>
         <BalanceProvider>
-          <div className="appShell">{children}</div>
+          <DemoHourProvider>
+            <OverlayProvider>
+              <CookieSync />
+              <div id="app" className="appShell">
+                {children}
+              </div>
+            </OverlayProvider>
+          </DemoHourProvider>
         </BalanceProvider>
       </body>
     </html>

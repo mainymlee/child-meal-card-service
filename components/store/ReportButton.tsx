@@ -1,24 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import { readLocalStorage, writeLocalStorage } from "@/lib/storage";
+import { useRouter } from "next/navigation";
+import { useSheet } from "@/lib/overlay/OverlayProvider";
+import { ReportSheet } from "@/components/sheets/ReportSheet";
+import type { Dong } from "@/lib/types";
 
-const STORAGE_KEY = "hanki:reportedStoreIds";
-
-export function ReportButton({ storeId }: { storeId: string }) {
-  const [reported, setReported] = useState(false);
-
-  const handleClick = () => {
-    const existing = readLocalStorage<string[]>(STORAGE_KEY) ?? [];
-    if (!existing.includes(storeId)) {
-      writeLocalStorage(STORAGE_KEY, [...existing, storeId]);
-    }
-    setReported(true);
-  };
+export function ReportButton({ storeId, dong }: { storeId: string; dong: Dong }) {
+  const router = useRouter();
+  const { open } = useSheet();
 
   return (
-    <button className="report" onClick={handleClick} disabled={reported}>
-      {reported ? "신고했어요. 확인해볼게" : "여기서 급식카드가 안 됐어요"}
+    <button
+      className="report"
+      onClick={() =>
+        open(
+          <ReportSheet
+            storeId={storeId}
+            dong={dong}
+            onNavigate={(id) => router.push(`/store/${id}`)}
+          />
+        )
+      }
+    >
+      여기서 급식카드가 안 됐어요
     </button>
   );
 }

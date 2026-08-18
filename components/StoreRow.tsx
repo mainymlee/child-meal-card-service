@@ -1,0 +1,52 @@
+import { StoreBadgePills } from "@/components/Pill";
+import { cheapestUnderBudgetItem, walkingMinutes } from "@/lib/stores";
+import type { Store } from "@/lib/types";
+
+export function StoreRow({
+  store,
+  index,
+  distance,
+  openNow,
+  verification,
+  onClick,
+}: {
+  store: Store;
+  index: number;
+  distance: number;
+  openNow: boolean;
+  verification: "ok" | "pending";
+  onClick: () => void;
+}) {
+  const item = cheapestUnderBudgetItem(store);
+  const isCvs = store.cat2 === "cvs";
+  const pending = verification === "pending";
+
+  return (
+    <button
+      className={`store fade ${isCvs ? "cvsrow " : ""}${pending ? "demoted" : ""}`}
+      onClick={onClick}
+    >
+      <span className="no">{index + 1}</span>
+      <div>
+        <p className="nm">{store.name}</p>
+        <p className="mt">
+          {store.category} · {item.name} {item.price.toLocaleString()}원
+        </p>
+        <StoreBadgePills
+          openNow={openNow}
+          isCvs={isCvs}
+          soloFriendly={store.badges.soloFriendly}
+          takeoutAvailable={store.badges.takeoutAvailable}
+          verification={verification}
+          compact
+        />
+      </div>
+      <span className="dist">
+        <b>
+          {distance < 1000 ? `${Math.round(distance)}m` : `${(distance / 1000).toFixed(1)}km`}
+        </b>
+        도보 {walkingMinutes(distance)}분
+      </span>
+    </button>
+  );
+}

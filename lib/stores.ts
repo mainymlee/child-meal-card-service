@@ -1,5 +1,5 @@
 import storesFile from "@/data/stores.json";
-import type { Store, StoresFile } from "./types";
+import type { Dong, Store, StoresFile } from "./types";
 
 const DATA = storesFile as StoresFile;
 
@@ -10,13 +10,30 @@ export function getStoreById(id: string): Store | undefined {
   return STORES.find((s) => s.id === id);
 }
 
+export function storesInDong(dong: Dong): Store[] {
+  return STORES.filter((s) => s.neighborhood === dong);
+}
+
 function toMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(":").map(Number);
   return h * 60 + m;
 }
 
-export function isOpenNow(store: Store, now: Date): boolean {
-  const nowMin = now.getHours() * 60 + now.getMinutes();
+/**
+ * hourOverride (0-24, fractional) replaces only "what hour is it" for the
+ * open/closed time-of-day check — it's driven by the judging/demo FAB and
+ * must never affect closedDays, which stays keyed to the real weekday.
+ */
+export function isOpenNow(
+  store: Store,
+  now: Date,
+  hourOverride?: number | null
+): boolean {
+  if (store.closedDays.includes(now.getDay())) return false;
+  const nowMin =
+    hourOverride != null
+      ? Math.round(hourOverride * 60)
+      : now.getHours() * 60 + now.getMinutes();
   const open = toMinutes(store.hours.open);
   const close = toMinutes(store.hours.close);
   if (close >= open) {

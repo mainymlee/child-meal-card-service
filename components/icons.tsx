@@ -131,3 +131,83 @@ export function UserIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function DownIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M6 9l6 6 6-6" />
+    </Svg>
+  );
+}
+
+export function HeartIcon({
+  filled,
+  ...props
+}: IconProps & { filled?: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={props.size ?? 20}
+      height={props.size ?? 20}
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth={props.strokeWidth ?? 1.9}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 21C7 16.5 3 13.2 3 9.3 3 6.4 5.2 4 8 4c1.6 0 3.1.8 4 2 0.9-1.2 2.4-2 4-2 2.8 0 5 2.4 5 5.3 0 3.9-4 7.2-9 11.7z" />
+    </svg>
+  );
+}
+
+export function CheckIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M20 6 9 17l-5-5" />
+    </Svg>
+  );
+}
+
+export function PinIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 21s7-5.8 7-11a7 7 0 1 0-14 0c0 5.2 7 11 7 11z" />
+      <circle cx="12" cy="10" r="2.6" />
+    </Svg>
+  );
+}
+
+export function StoreIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 10v10h16V10M2 10l2-6h16l2 6a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0z" />
+      <path d="M9 20v-6h6v6" />
+    </Svg>
+  );
+}
+
+export function ExpandIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+    </Svg>
+  );
+}
+
+export function ShrinkIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7" />
+    </Svg>
+  );
+}
+
+export function TargetIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="12" cy="12" r="7" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+    </Svg>
+  );
+}

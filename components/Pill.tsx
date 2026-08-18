@@ -1,4 +1,4 @@
-type PillVariant = "ok" | "warn" | "neu" | "pri";
+type PillVariant = "ok" | "warn" | "neu" | "pri" | "bad";
 
 export function Pill({
   variant,
@@ -18,28 +18,40 @@ export function Pill({
 }
 
 export function StoreBadgePills({
+  openNow,
+  isCvs,
   soloFriendly,
   takeoutAvailable,
-  paymentConfirmed,
-  openNow,
+  verification,
+  compact,
 }: {
+  openNow: boolean;
+  isCvs?: boolean;
   soloFriendly: boolean;
   takeoutAvailable: boolean;
-  paymentConfirmed: boolean;
-  openNow: boolean;
+  verification: "ok" | "pending";
+  compact?: boolean;
 }) {
   return (
     <div className="badges">
-      {openNow ? (
+      {isCvs ? (
+        <Pill variant="ok" dot>
+          24시간
+        </Pill>
+      ) : openNow ? (
         <Pill variant="ok" dot>
           지금 영업
         </Pill>
       ) : (
         <Pill variant="neu">영업 종료</Pill>
       )}
-      {soloFriendly ? <Pill variant="pri">혼밥 편함</Pill> : null}
-      {takeoutAvailable ? <Pill variant="neu">포장 가능</Pill> : null}
-      {paymentConfirmed ? <Pill variant="ok">결제 확인됨</Pill> : null}
+      {!compact && soloFriendly ? <Pill variant="pri">혼밥 편함</Pill> : null}
+      {!compact && takeoutAvailable ? <Pill variant="neu">포장 가능</Pill> : null}
+      {verification === "ok" ? (
+        <Pill variant="ok">결제 확인됨</Pill>
+      ) : (
+        <Pill variant="warn">확인 중</Pill>
+      )}
     </div>
   );
 }

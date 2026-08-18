@@ -4,51 +4,35 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { NavBar } from "@/components/layout/NavBar";
 import { WarnIcon } from "@/components/icons";
+import { Keypad } from "@/components/balance/Keypad";
 import { calcBalancePlan, getCycleInfo } from "@/lib/balance";
 import { useBalance } from "@/lib/hooks/useBalance";
+import { useExpMode } from "@/lib/hooks/useExpMode";
+import { useKeypadBuffer } from "@/lib/hooks/useKeypadBuffer";
+import { useSheet } from "@/lib/overlay/OverlayProvider";
+import { ExpirySheet } from "@/components/sheets/ExpirySheet";
 import { nowInSeoul } from "@/lib/time";
-
-const MAX_DIGITS = 7; // up to 9,999,999원
 
 export default function BalancePage() {
   const router = useRouter();
   const { balance, setBalance } = useBalance();
-  const [digits, setDigits] = useState(String(balance));
-  // The keypad starts showing the known balance for reference; the first
-  // keypress should start a fresh number rather than append to it.
-  const [touched, setTouched] = useState(false);
-  // Reset the keypad buffer whenever the stored balance changes underneath us
-  // (e.g. hydrating from localStorage after mount). Adjusting state during
-  // render — rather than in an effect — avoids an extra flash of the stale
-  // buffer; see https://react.dev/learn/you-might-not-need-an-effect.
-  const [syncedBalance, setSyncedBalance] = useState(balance);
+  const expMode = useExpMode();
+  const { open } = useSheet();
+  const { value, pressDigit, pressBackspace, reset } = useKeypadBuffer(balance);
+
+  // Adjust the buffer when the stored balance changes underneath us (e.g.
+  // hydrating from localStorage after mount) — done during render, not an
+  // effect, per this project's set-state-in-effect lint constraint.
+  const [syncedBalance, setSyncedBalanceState] = useState(balance);
   if (balance !== syncedBalance) {
-    setSyncedBalance(balance);
-    setDigits(String(balance));
-    setTouched(false);
+    setSyncedBalanceState(balance);
+    reset(balance);
   }
 
-  const value = Number(digits || "0");
   const now = nowInSeoul();
-  const plan = calcBalancePlan(value, now);
-  const { cycleEnd } = getCycleInfo(now);
+  const plan = calcBalancePlan(value, now, expMode);
+  const { cycleEnd } = getCycleInfo(now, expMode);
 
-  const pressDigit = (d: string) => {
-    setDigits((prev) => {
-      const base = touched ? prev : "";
-      const next = (base + d).replace(/^0+(?=\d)/, "").slice(0, MAX_DIGITS);
-      return next || "0";
-    });
-    setTouched(true);
-  };
-  const pressBackspace = () => {
-    if (!touched) {
-      setDigits("0");
-      setTouched(true);
-      return;
-    }
-    setDigits((prev) => (prev.length > 1 ? prev.slice(0, -1) : "0"));
-  };
   const save = () => {
     setBalance(value);
     router.push("/");
@@ -64,23 +48,10 @@ export default function BalancePage() {
             <span className="cur">₩</span>
             {value.toLocaleString()}
           </p>
-          <p className="cap">카드 앱이나 문자에서 확인한 금액을 넣어줘</p>
+          <p className="cap">카드 앱이나 문자에서 확인한 금액을 넣어주세요</p>
         </div>
 
-        <div className="pad">
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((n) => (
-            <button key={n} onClick={() => pressDigit(n)}>
-              {n}
-            </button>
-          ))}
-          <button className="fn" onClick={() => pressDigit("000")}>
-            000
-          </button>
-          <button onClick={() => pressDigit("0")}>0</button>
-          <button className="fn" onClick={pressBackspace}>
-            지우기
-          </button>
-        </div>
+        <Keypad onDigit={pressDigit} onBackspace={pressBackspace} />
 
         <div className="card">
           <p className="lbl">이렇게 쓰면 딱 맞아</p>
@@ -107,10 +78,13 @@ export default function BalancePage() {
         <div className="alert warn" style={{ marginTop: 2 }}>
           <WarnIcon size={15} />
           <span>
-            남은 금액은 {cycleEnd.getMonth() + 1}월 {cycleEnd.getDate()}일에 없어지고 다음 달로
-            넘어가지 않아. 미리 알려줄게.
+            남은 금액은 {cycleEnd.getMonth() + 1}월 {cycleEnd.getDate()}일에 사라져요. 사라지기{" "}
+            <b>7일 전</b>과 <b>하루 전</b>에 앱을 열면 잔액 상황을 확인할 수 있어요.
           </span>
         </div>
+        <button className="btn ghost sm" style={{ marginTop: 10 }} onClick={() => open(<ExpirySheet />)}>
+          이월·소멸 규정 확인하기
+        </button>
       </div>
 
       <div className="footerAction">
