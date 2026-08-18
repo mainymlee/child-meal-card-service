@@ -6,6 +6,7 @@ import { NavBar } from "@/components/layout/NavBar";
 import { WarnIcon } from "@/components/icons";
 import { calcBalancePlan, getCycleInfo } from "@/lib/balance";
 import { useBalance } from "@/lib/hooks/useBalance";
+import { nowInSeoul } from "@/lib/time";
 
 const MAX_DIGITS = 7; // up to 9,999,999원
 
@@ -28,7 +29,7 @@ export default function BalancePage() {
   }
 
   const value = Number(digits || "0");
-  const now = new Date();
+  const now = nowInSeoul();
   const plan = calcBalancePlan(value, now);
   const { cycleEnd } = getCycleInfo(now);
 

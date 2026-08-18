@@ -4,18 +4,19 @@ import Link from "next/link";
 import { calcBalancePlan, getCycleInfo } from "@/lib/balance";
 import { PERSONA } from "@/lib/persona";
 import { useBalance } from "@/lib/hooks/useBalance";
+import { nowInSeoul, toSeoulDate } from "@/lib/time";
 import { matchForPersona, WELFARE_PERSONA } from "@/lib/welfare";
 import { TabBar } from "@/components/layout/TabBar";
 import { CardIcon, ChevronIcon, FoodIcon, GiftIcon, WarnIcon } from "@/components/icons";
 
 function formatDate(iso: string): string {
-  const d = new Date(iso);
+  const d = toSeoulDate(new Date(iso));
   return `${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
 
 export default function HomePage() {
   const { balance, lastUpdatedISO } = useBalance();
-  const now = new Date();
+  const now = nowInSeoul();
   const { remainingDays, dailyRecommended, expiringAmount } = calcBalancePlan(
     balance,
     now

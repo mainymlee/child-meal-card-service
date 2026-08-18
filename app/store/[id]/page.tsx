@@ -10,6 +10,7 @@ import {
   isOpenNow,
   walkingMinutes,
 } from "@/lib/stores";
+import { nowInSeoul } from "@/lib/time";
 
 // 영업 여부가 현재 시각에 의존하므로 매 요청마다 다시 렌더링한다.
 export const dynamic = "force-dynamic";
@@ -22,7 +23,7 @@ export default async function StoreDetailPage(
   const store = getStoreById(decodeURIComponent(id));
   if (!store) notFound();
 
-  const now = new Date();
+  const now = nowInSeoul();
   const openNow = isOpenNow(store, now);
   const distance = distanceMeters(PERSONA_HOME, store);
   const walk = walkingMinutes(distance);

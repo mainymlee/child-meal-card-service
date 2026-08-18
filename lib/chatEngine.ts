@@ -5,6 +5,7 @@ import {
   distanceMeters,
   isOpenNow,
 } from "./stores";
+import { nowInSeoul } from "./time";
 import type { Store } from "./types";
 
 export type SoloAnswer = "혼자" | "같이";
@@ -96,7 +97,7 @@ export function initialChatState(): ChatState {
 }
 
 export function chatReducer(state: ChatState, action: ChatAction): ChatState {
-  const now = new Date();
+  const now = nowInSeoul();
   switch (action.type) {
     case "ANSWER_SOLO": {
       const messages = [

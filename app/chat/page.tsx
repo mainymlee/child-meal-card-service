@@ -14,6 +14,7 @@ import {
   type SoloAnswer,
 } from "@/lib/chatEngine";
 import { getStoreById, isOpenNow } from "@/lib/stores";
+import { nowInSeoul } from "@/lib/time";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -66,7 +67,7 @@ export default function ChatPage() {
             >
               <div style={{ marginBottom: 8 }}>
                 <StoreBadgePills
-                  openNow={isOpenNow(recommendedStore, new Date())}
+                  openNow={isOpenNow(recommendedStore, nowInSeoul())}
                   soloFriendly={recommendedStore.badges.soloFriendly}
                   takeoutAvailable={recommendedStore.badges.takeoutAvailable}
                   paymentConfirmed={false}

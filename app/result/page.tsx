@@ -14,6 +14,7 @@ import {
   isOpenNow,
   walkingMinutes,
 } from "@/lib/stores";
+import { nowInSeoul } from "@/lib/time";
 
 type FilterKey = "openNow" | "solo" | "takeout" | "underBudget";
 
@@ -28,7 +29,7 @@ const MAX_MARKERS = 12;
 
 export default function ResultPage() {
   const router = useRouter();
-  const now = useMemo(() => new Date(), []);
+  const now = useMemo(() => nowInSeoul(), []);
   const [filters, setFilters] = useState<Record<FilterKey, boolean>>({
     openNow: true,
     solo: true,
