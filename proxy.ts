@@ -7,7 +7,7 @@ import type { NextRequest } from "next/server";
 // return visit. localStorage stays the authoritative source of truth — see
 // lib/onboarding.ts, which keeps this cookie in sync whenever it disagrees
 // with the real localStorage value.
-const ONBOARDED_COOKIE = "hanki_onboarded";
+const ONBOARDED_COOKIE = "hanki_v10_onboarded";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { setOnboarded, useOnboarded } from "@/lib/hooks/useOnboarded";
 
-const ONBOARDED_COOKIE = "hanki_onboarded";
+const ONBOARDED_COOKIE = "hanki_v10_onboarded";
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
 function setCookie() {
