@@ -13,7 +13,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { parse } from "csv-parse/sync";
 
-const CSV_PATH = "춘천시_아동급식카드_가맹점_20250714.csv";
+const CSV_PATH = "data/raw/춘천시_아동급식카드_가맹점_20250714.csv";
 const OUT_PATH = "data/stores.json";
 const FAILURES_PATH = "scripts/geocode-failures.json";
 
