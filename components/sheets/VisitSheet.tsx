@@ -10,8 +10,8 @@ export function VisitSheet({ storeId }: { storeId: string }) {
   const { show } = useToast();
   if (!store) return null;
 
-  const record = (grp: typeof store.grp) => {
-    logMeal(grp);
+  const record = (grp: typeof store.grp, menuName: string | null) => {
+    logMeal(grp, menuName);
     close();
     show("기록했어요 — 다음 추천에 반영할게요");
   };
@@ -20,10 +20,12 @@ export function VisitSheet({ storeId }: { storeId: string }) {
     <>
       <h3>다녀오셨어요? 뭐 드셨어요?</h3>
       <p className="desc">한 번만 눌러주면 다음 추천이 더 정확해져요.</p>
-      <button className="choice" onClick={() => record(store.grp)}>
-        추천받은 메뉴 먹었어요
-      </button>
-      <button className="choice" onClick={() => record("기타")}>
+      {store.menu.slice(0, 4).map((menu) => (
+        <button key={menu.name} className="choice" onClick={() => record(store.grp, menu.name)}>
+          {menu.name} 먹었어요
+        </button>
+      ))}
+      <button className="choice" onClick={() => record("기타", null)}>
         다른 걸 먹었어요
       </button>
       <button className="skiplink" onClick={close}>

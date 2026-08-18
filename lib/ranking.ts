@@ -1,6 +1,7 @@
 import { GRP_BASE_SCORE } from "./taxonomy";
 import { distanceMeters } from "./stores";
-import type { Store } from "./types";
+import { bestNutritionMenu, nutritionFitScore } from "./nutrition";
+import type { MealLogEntry, Store } from "./types";
 
 export function reportCount(
   reports: Record<string, number>,
@@ -17,15 +18,17 @@ export function verificationStatus(
 }
 
 interface NutritionScoreOptions {
-  mealLog: Store["grp"][];
+  mealLog: MealLogEntry[];
   home: { lat: number; lng: number };
   reports: Record<string, number>;
 }
 
 export function nutritionScore(store: Store, opts: NutritionScoreOptions): number {
   let score = GRP_BASE_SCORE[store.grp];
-  const recentRepeats = opts.mealLog.filter((g) => g === store.grp).length;
+  const recentRepeats = opts.mealLog.filter((meal) => meal.grp === store.grp).length;
   score -= recentRepeats * 2;
+  const menu = bestNutritionMenu(store, opts.mealLog);
+  if (menu) score += nutritionFitScore(menu, store.grp, opts.mealLog);
   score -= distanceMeters(opts.home, store) / 400;
   if (verificationStatus(opts.reports, store.id) === "pending") score -= 6;
   return score;

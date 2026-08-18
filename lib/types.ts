@@ -53,6 +53,12 @@ export interface MenuItem {
   underBudget: boolean;
 }
 
+export interface MealLogEntry {
+  grp: NutritionGroup;
+  menuName: string | null;
+  eatenAt: string | null;
+}
+
 export interface StoreBadges {
   soloFriendly: boolean;
   takeoutAvailable: boolean;

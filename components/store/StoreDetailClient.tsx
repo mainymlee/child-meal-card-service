@@ -35,7 +35,7 @@ export function StoreDetailClient({ store }: { store: Store }) {
   const directionsUrl = `https://map.kakao.com/link/to/${encodeURIComponent(store.name)},${store.lat},${store.lng}`;
   const kakaoViewUrl = `https://map.kakao.com/link/map/${encodeURIComponent(store.name)},${store.lat},${store.lng}`;
 
-  const recentRepeats = mealLog.filter((g) => g === store.grp).length;
+  const recentRepeats = mealLog.filter((meal) => meal.grp === store.grp).length;
 
   const handleNavigate = () => {
     setTimeout(() => open(<VisitSheet storeId={store.id} />), 1200);

@@ -1,6 +1,7 @@
 import { rankStores } from "./ranking";
 import { isOpenNow } from "./stores";
-import type { Dong, NutritionGroup, Store } from "./types";
+import { bestNutritionMenu } from "./nutrition";
+import type { Dong, MealLogEntry, Store } from "./types";
 
 export type SoloAnswer = "혼자" | "같이";
 export type DineMode = "가게에서" | "포장" | "아무거나";
@@ -40,7 +41,7 @@ export interface RecommendContext {
   stores: Store[];
   now: Date;
   hourOverride?: number | null;
-  mealLog: NutritionGroup[];
+  mealLog: MealLogEntry[];
   home: { lat: number; lng: number };
   reports: Record<string, number>;
 }
@@ -80,7 +81,7 @@ export function recommendStore(ctx: RecommendContext, opts: { solo?: SoloAnswer;
 
   const top = ranked[0];
   if (!top) return null;
-  const item = [...top.menu].filter((m) => m.underBudget).sort((a, b) => a.price - b.price)[0] ?? top.menu[0];
+  const item = bestNutritionMenu(top, ctx.mealLog) ?? top.menu[0];
   return {
     storeId: top.id,
     storeName: top.name,

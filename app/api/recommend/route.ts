@@ -3,6 +3,8 @@ import { rankStores } from "@/lib/ranking";
 import { isOpenNow, storesInDong, walkingMinutes, distanceMeters } from "@/lib/stores";
 import { NEIGHBORHOODS } from "@/lib/taxonomy";
 import { nowInSeoul } from "@/lib/time";
+import { estimateNutrition } from "@/lib/nutrition";
+import { normalizeMealLog } from "@/lib/mealLog";
 import type { DineMode, Recommendation, SoloAnswer } from "@/lib/chatEngine";
 import type { Dong, NutritionGroup } from "@/lib/types";
 
@@ -47,9 +49,9 @@ export async function POST(request: Request) {
   }
 
   const dong = body.dong as Dong;
-  const mealLog = Array.isArray(body.mealLog)
-    ? body.mealLog.filter((item): item is NutritionGroup => NUTRITION_GROUPS.includes(item as NutritionGroup)).slice(-12)
-    : [];
+  const mealLog = normalizeMealLog(body.mealLog)
+    .filter((item) => NUTRITION_GROUPS.includes(item.grp))
+    .slice(-7);
   const rawReports = body.reports && typeof body.reports === "object" ? body.reports as Record<string, unknown> : {};
   const reports = Object.fromEntries(
     Object.entries(rawReports).slice(0, 2000).map(([id, count]) => [id, Math.max(0, Math.min(99, Number(count) || 0))])
@@ -86,6 +88,7 @@ export async function POST(request: Request) {
     menus: store.menu.filter((menu) => menu.underBudget).slice(0, 6).map((menu) => ({
       name: menu.name,
       price: menu.price,
+      nutritionEstimate: estimateNutrition(menu.name, store.grp),
     })),
   })).filter((store) => store.menus.length > 0);
 
@@ -106,11 +109,21 @@ export async function POST(request: Request) {
         instructions: [
           "당신은 아동급식카드 사용자를 돕는 메뉴 추천 도우미입니다.",
           "반드시 제공된 후보의 storeId와 menuName 중 하나만 고르세요.",
-          "예산 준수, 결제 신뢰도, 이동 거리, 최근 식사와 다른 영양군을 우선하세요.",
+          "예산 준수와 결제 신뢰도를 먼저 지키고 이동 거리도 고려하세요.",
+          "최근 실제 메뉴의 추정 영양 패턴을 보고 단백질·채소가 부족하면 보완하고, 나트륨·당·지방이 반복해서 높으면 낮은 후보를 우선하세요.",
+          "nutritionEstimate는 메뉴명 기반 정성 추정이며 실제 함량처럼 단정하지 마세요.",
           "건강 효능을 단정하지 말고, 이유는 따뜻한 한국어 한 문장(80자 이내)으로 쓰세요.",
         ].join("\n"),
         input: JSON.stringify({
-          preferences: { dong, solo: body.solo, dineMode: body.dineMode, recentMeals: mealLog },
+          preferences: {
+            dong,
+            solo: body.solo,
+            dineMode: body.dineMode,
+            recentMeals: mealLog.map((meal) => ({
+              ...meal,
+              nutritionEstimate: meal.menuName ? estimateNutrition(meal.menuName, meal.grp) : null,
+            })),
+          },
           candidates,
         }),
         text: {
