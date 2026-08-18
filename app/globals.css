@@ -2165,3 +2165,34 @@ a:focus-visible {
 .favrow > span:nth-child(2) { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 .favrow .tt { font-size: 14.5px; font-weight: 800; }
 .favrow .ts { font-size: 12.5px; font-weight: 600; opacity: 0.6; }
+
+/* App-like viewport: keep the browser page fixed and scroll only the
+   route content between the navigation bar and bottom actions/tab bar. */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+#app.appShell {
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.screenBody {
+  min-height: 0;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+}
+
+@supports not (height: 100dvh) {
+  #app.appShell {
+    height: 100vh;
+    min-height: 100vh;
+    max-height: 100vh;
+  }
+}
