@@ -1,0 +1,40 @@
+{
+  "persona": {
+    "type": "한부모가정",
+    "age": 11,
+    "region": "춘천시",
+    "schoolLevel": "초등학생"
+  },
+  "policies": [
+    {
+      "id": "meal-support",
+      "title": "아동급식지원 (꿈자람카드)",
+      "description": "학기 중 주말·공휴일, 방학 중 매일 1일 1식 지원",
+      "amount": "1식 10,000원",
+      "org": "춘천시 보육아동과",
+      "link": "https://www.chuncheon.go.kr/new-welfare/main/",
+      "status": "이용중",
+      "eligibility": ["한부모가정", "아동"]
+    },
+    {
+      "id": "single-parent-childcare",
+      "title": "한부모가족 아동양육비",
+      "description": "만 18세 미만 자녀를 양육하는 한부모가족에게 매월 지급",
+      "amount": "월 21만 원",
+      "org": "복지로 · 주민센터",
+      "link": "https://www.bokjiro.go.kr",
+      "status": "신청가능",
+      "eligibility": ["한부모가정"]
+    },
+    {
+      "id": "education-benefit",
+      "title": "교육급여 · 교육활동지원비",
+      "description": "수급 가구 초·중·고 학생에게 학용품비·교재비를 연 1회 지원",
+      "amount": "연 46만 원 내외",
+      "org": "교육비원클릭",
+      "link": "https://www.edufine.go.kr",
+      "status": "신청가능",
+      "eligibility": ["초등학생", "수급가구"]
+    }
+  ]
+}
