@@ -35,7 +35,7 @@ export default function BalancePage() {
 
   const save = () => {
     setBalance(value);
-    router.push("/");
+    router.push("/home");
   };
 
   return (

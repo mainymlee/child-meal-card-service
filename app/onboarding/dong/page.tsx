@@ -1,13 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PinIcon } from "@/components/icons";
 import { NEIGHBORHOODS } from "@/lib/taxonomy";
-import { setDong, useDong } from "@/lib/hooks/useDong";
+import { setDong } from "@/lib/hooks/useDong";
+import type { Dong } from "@/lib/types";
 
 export default function OnboardingDongPage() {
   const router = useRouter();
-  const dong = useDong();
+  const [selectedDong, setSelectedDong] = useState<Dong | null>(null);
+
+  const goNext = () => {
+    if (!selectedDong) return;
+    setDong(selectedDong);
+    router.push("/onboarding/balance");
+  };
 
   return (
     <main>
@@ -29,8 +37,9 @@ export default function OnboardingDongPage() {
       {NEIGHBORHOODS.map((d) => (
         <button
           key={d}
-          className={`choice${dong === d ? " on" : ""}`}
-          onClick={() => setDong(d)}
+          className={`choice${selectedDong === d ? " on" : ""}`}
+          aria-pressed={selectedDong === d}
+          onClick={() => setSelectedDong(d)}
         >
           <PinIcon />
           {d}
@@ -39,8 +48,8 @@ export default function OnboardingDongPage() {
       <div className="grow" />
       <button
         className="btn"
-        disabled={!dong}
-        onClick={() => router.push("/onboarding/balance")}
+        disabled={!selectedDong}
+        onClick={goNext}
       >
         다음
       </button>
