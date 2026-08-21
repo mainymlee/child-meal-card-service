@@ -90,17 +90,18 @@ export default function AppHomePage() {
           {expiringAmount > 0 ? (
             <div className="innerbox warn">
               <WarnIcon size={15} />
-              <span>
-                이대로면 <b>{expiringAmount.toLocaleString()}원</b>이 남을 수 있어. 하루 지원 기준은{" "}
-                <b>{dailyRecommended.toLocaleString()}원</b>, 잔액 소진에는 하루{" "}
-                <b>{dailySpendNeeded.toLocaleString()}원</b>이 필요해
+              <span className="spendingNotice">
+                <span>하루 지원 기준 <b>{dailyRecommended.toLocaleString()}원</b></span>
+                <span>모두 쓰려면 하루 <b>{dailySpendNeeded.toLocaleString()}원</b>이 필요해</span>
+                <span className="noticeRisk">이대로면 <b>{expiringAmount.toLocaleString()}원</b>이 남을 수 있어</span>
               </span>
             </div>
           ) : (
             <div className="innerbox">
               <CheckIcon size={16} />
-              <span>
-                하루 지원 기준 <b>{dailyRecommended.toLocaleString()}원</b> 안에서 잔액을 다 쓸 수 있어
+              <span className="spendingNotice">
+                <span>하루 지원 기준 <b>{dailyRecommended.toLocaleString()}원</b></span>
+                <span>기준 안에서 잔액을 모두 쓸 수 있어</span>
               </span>
             </div>
           )}
