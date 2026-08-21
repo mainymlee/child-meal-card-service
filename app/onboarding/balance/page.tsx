@@ -45,9 +45,14 @@ export default function OnboardingBalancePage() {
             +{(n / 10000).toLocaleString()}만원
           </button>
         ))}
-        <button onClick={() => reset(0, true)}>지우기</button>
+        <button aria-label="전체 금액 지우기" onClick={() => reset(0, true)}>전체 지우기</button>
       </div>
       <Keypad onDigit={pressDigit} onBackspace={pressBackspace} />
+      {value > 300000 ? (
+        <p className="sub" role="status" style={{ color: "var(--orange)", textAlign: "center", margin: "6px 0 0" }}>
+          금액이 큰 것 같아요. 카드 앱이나 문자에서 한 번 더 확인해 주세요.
+        </p>
+      ) : null}
       <div className="grow" />
       <button className="btn" onClick={save}>
         저장하고 다음

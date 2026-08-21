@@ -52,6 +52,12 @@ export default function BalancePage() {
         </div>
 
         <Keypad onDigit={pressDigit} onBackspace={pressBackspace} />
+        {value > 300000 ? (
+          <div className="alert warn" role="status" style={{ marginBottom: 12 }}>
+            <WarnIcon size={15} />
+            <span>금액이 큰 것 같아요. 카드 앱이나 문자에서 한 번 더 확인해 주세요.</span>
+          </div>
+        ) : null}
 
         <div className="card">
           <p className="lbl">이렇게 쓰면 딱 맞아</p>

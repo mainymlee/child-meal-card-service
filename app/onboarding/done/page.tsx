@@ -27,7 +27,7 @@ export default function OnboardingDonePage() {
       <p className="desc" style={{ textAlign: "center" }}>
         {dong} 근처에서 지금 갈 수 있는 곳부터 보여드릴게요.
         <br />
-        가족 상황은 묻지 않아요 — 혜택 찾기를 쓸 때만 물어볼게요.
+        가족 상황은 묻지 않아요. 혜택 찾기를 쓸 때만 물어볼게요.
       </p>
       <div className="grow" />
       <button className="btn" onClick={start}>

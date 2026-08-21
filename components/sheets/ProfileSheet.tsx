@@ -16,7 +16,7 @@ export function ProfileSheet() {
   const save = () => {
     setProfile({ familyType, schoolLevel });
     close();
-    show("저장했어요 — 조건에 맞는 혜택으로 다시 찾았어요");
+    show("저장했어요. 조건에 맞는 혜택으로 다시 찾았어요");
   };
 
   return (

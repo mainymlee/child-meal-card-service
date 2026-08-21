@@ -29,7 +29,7 @@ export function VisitSheet({ storeId }: { storeId: string }) {
     logMeal(store.grp, menuName);
     logMealFeedback({ storeId: store.id, grp: store.grp, menuName, satisfaction, reason });
     close();
-    show("만족도를 기록했어요 — 다음 추천부터 반영할게요");
+    show("만족도를 기록했어요. 다음 추천부터 반영할게요");
   };
 
   if (needsReason) {

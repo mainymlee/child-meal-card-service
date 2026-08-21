@@ -37,7 +37,7 @@ export default function CvsPage() {
       <div className="screenBody">
         <div className="card flat" style={{ marginTop: 2 }}>
           <p className="sub" style={{ margin: 0 }}>
-            편의점도 괜찮아요 — 다만 <b>밥 · 단백질 · 우유나 과일</b>이 같이 있으면 좋아요.
+            편의점도 괜찮아요. 다만 <b>밥·단백질·우유나 과일</b>이 같이 있으면 좋아요.
             아래 조합은 전부 카드로 살 수 있는 품목이에요.
           </p>
         </div>
@@ -92,7 +92,7 @@ export default function CvsPage() {
             가까운 편의점 <b>{openCvs.length}곳</b>
           </p>
           <span>
-            {gpsLocation ? "현재 위치" : dong} · {String(now.getHours()).padStart(2, "0")}:
+            {gpsLocation ? "현재 위치" : dong}·{String(now.getHours()).padStart(2, "0")}:
             {String(now.getMinutes()).padStart(2, "0")}
           </span>
         </div>
@@ -103,7 +103,7 @@ export default function CvsPage() {
               store={store}
               distance={distanceMeters(origin, store)}
               openNow
-              verification={verificationStatus(reports, store.id)}
+              verification={verificationStatus(reports, store)}
               onClick={() => router.push(`/store/${store.id}`)}
             />
           ))
@@ -117,8 +117,8 @@ export default function CvsPage() {
 
         <div className="card flat">
           <p className="sub" style={{ margin: 0 }}>
-            술 · 담배 · 커피는 카드로 결제되지 않아요. 안 되는 품목이 있었다면{" "}
-            <b>여기서 알려주세요</b> — 다른 친구들에게도 도움이 돼요.
+            술·담배·커피는 카드로 결제되지 않아요. 안 되는 품목이 있었다면{" "}
+            <b>여기서 알려주세요.</b> 다른 친구들에게도 도움이 돼요.
           </p>
         </div>
       </div>

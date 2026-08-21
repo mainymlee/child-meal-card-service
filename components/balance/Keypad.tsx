@@ -16,7 +16,7 @@ export function Keypad({
         000
       </button>
       <button onClick={() => onDigit("0")}>0</button>
-      <button className="fn" onClick={onBackspace}>
+      <button className="fn" aria-label="한 자 지우기" onClick={onBackspace}>
         지우기
       </button>
     </div>

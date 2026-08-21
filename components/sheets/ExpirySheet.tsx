@@ -14,7 +14,7 @@ export function ExpirySheet() {
     show(
       mode === "month"
         ? "매월 말 소멸 기준으로 계산해요"
-        : "월 이월 · 12월 말 소멸 기준으로 계산해요"
+        : "월 이월, 12월 말 소멸 기준으로 계산해요"
     );
   };
 
@@ -27,7 +27,7 @@ export function ExpirySheet() {
         <br />
         <br />
         춘천시 공식 안내에는 이월 여부가 명시돼 있지 않아요. 정확한 규정은{" "}
-        <b>춘천시청 보육아동과(033-250-3686)</b>에 확인해요 — 확인 전까지는 안전하게{" "}
+        <b>춘천시청 보육아동과(033-250-3686)</b>에 확인해요. 확인 전까지는 안전하게{" "}
         <b>매월 다 쓰는 것</b>을 기준으로 계산할게요.
       </p>
       <p className="lbl">계산 기준 (확인 후 바꿔요)</p>
@@ -37,14 +37,14 @@ export function ExpirySheet() {
       >
         매월 말 소멸 기준{" "}
         <span style={{ marginLeft: "auto", fontSize: 12.5, color: "var(--g500)" }}>
-          보수적 · 권장
+          보수적 권장
         </span>
       </button>
       <button
         className={`choice${expMode === "year" ? " on" : ""}`}
         onClick={() => choose("year")}
       >
-        월 이월 · 12월 말 소멸 기준
+        월 이월, 12월 말 소멸 기준
       </button>
       <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
         <a className="btn ghost sm" style={{ flex: 1 }} href="tel:033-250-3686">

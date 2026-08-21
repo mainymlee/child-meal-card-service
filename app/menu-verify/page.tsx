@@ -127,7 +127,7 @@ export default function MenuVerifyPage() {
         <p className="lbl">1. 가게 선택</p>
         <select value={storeId} onChange={(event) => setStoreId(event.target.value)}>
           <option value="">확인할 가게를 선택하세요</option>
-          {stores.map((store) => <option key={store.id} value={store.id}>{store.name} · {store.neighborhood}</option>)}
+          {stores.map((store) => <option key={store.id} value={store.id}>{store.name}·{store.neighborhood}</option>)}
         </select>
         {selectedStore ? <p className="sub">{selectedStore.address}</p> : null}
       </div>

@@ -34,7 +34,7 @@ export function StoreDetailClient({ store }: { store: Store }) {
   const distance = distanceMeters(home, store);
   const walk = walkingMinutes(distance);
   const isCvs = store.cat2 === "cvs";
-  const verification = verificationStatus(reports, store.id);
+  const verification = verificationStatus(reports, store);
 
   const directionsUrl = `https://map.kakao.com/link/to/${encodeURIComponent(store.name)},${store.lat},${store.lng}`;
   const kakaoViewUrl = `https://map.kakao.com/link/map/${encodeURIComponent(store.name)},${store.lat},${store.lng}`;
@@ -75,7 +75,7 @@ export function StoreDetailClient({ store }: { store: Store }) {
           {store.name}
         </p>
         <p className="mt" style={{ margin: 0 }}>
-          {store.category} · {store.neighborhood}
+          {store.category}·{store.neighborhood}
         </p>
 
         <dl className="kv">
@@ -85,30 +85,31 @@ export function StoreDetailClient({ store }: { store: Store }) {
             {store.closedDays.length ? (
               <span style={{ color: "var(--g400)" }}>
                 {" "}
-                · {WEEKDAY_LABELS[store.closedDays[0]]}요일 휴무
+                ·{WEEKDAY_LABELS[store.closedDays[0]]}요일 휴무
               </span>
             ) : null}
             {store.breakTime ? (
-              <span style={{ color: "var(--g400)" }}> · {store.breakTime}</span>
+              <span style={{ color: "var(--g400)" }}>·{store.breakTime}</span>
             ) : null}
-            {store.hoursEst ? <span className="pill warn">확인 필요</span> : null}{" "}
+            {store.hoursEst ? <>{" · "}<span className="pill warn">확인 필요</span></> : null}
             <span style={{ color: openNow ? "var(--green)" : "var(--g400)", fontWeight: 700 }}>
-              · {openNow ? "영업 중" : "영업 종료"}
+              ·{openNow ? "영업 중" : "영업 종료"}
             </span>
           </dd>
           <dt>거리</dt>
           <dd>
-            {distance < 1000 ? `${Math.round(distance)}m` : `${(distance / 1000).toFixed(1)}km`} · 도보{" "}
+            {distance < 1000 ? `${Math.round(distance)}m` : `${(distance / 1000).toFixed(1)}km`}·도보{" "}
             {walk}분
           </dd>
           <dt>주문 방식</dt>
           <dd>{store.counterDescription}</dd>
           <dt>확인일</dt>
           <dd>
-            {store.badges.paymentConfirmedDate ?? "아직 확인 안 됨"}{" "}
-            <span style={{ color: "var(--g400)" }}>
-              ({verification === "ok" ? "결제 확인" : "신고 접수 · 재확인 중"})
-            </span>
+            {verification === "pending"
+              ? `${store.badges.paymentConfirmedDate ?? "이전 확인 기록 없음"} (신고 접수·재확인 중)`
+              : verification === "confirmed"
+                ? `${store.badges.paymentConfirmedDate ?? "확인 날짜 없음"} (결제 확인됨)`
+                : "아직 결제 확인 안 됨"}
           </dd>
         </dl>
 
@@ -159,7 +160,7 @@ export function StoreDetailClient({ store }: { store: Store }) {
           <div className="card flat">
             <p className="sub" style={{ margin: 0 }}>
               {store.badges.soloFriendly
-                ? "혼자 가도 편한 곳이에요 — 카운터에서 바로 주문하면 돼요."
+                ? "혼자 가도 편한 곳이에요. 카운터에서 바로 주문하면 돼요."
                 : "매장 식사 위주라 같이 가면 더 편해요."}
             </p>
           </div>
@@ -168,7 +169,7 @@ export function StoreDetailClient({ store }: { store: Store }) {
 
       <div className="footerAction">
         <a className="btn" href={directionsUrl} target="_blank" rel="noopener noreferrer" onClick={handleNavigate}>
-          길찾기 · 도보 {walk}분
+          길찾기·도보 {walk}분
         </a>
         <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
           <a
@@ -186,7 +187,7 @@ export function StoreDetailClient({ store }: { store: Store }) {
             </a>
           ) : null}
         </div>
-        <ReportButton storeId={store.id} dong={store.neighborhood} />
+        <ReportButton storeId={store.id} />
       </div>
     </>
   );

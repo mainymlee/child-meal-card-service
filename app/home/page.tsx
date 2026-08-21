@@ -48,7 +48,9 @@ export default function AppHomePage() {
 
   const dongStores = gpsLocation ? storesNear(gpsLocation) : storesInDong(dong);
   const openableCount = dongStores.filter(
-    (s) => s.cat2 !== "cvs" && isOpenNow(s, now, hourOverride)
+    (s) => isOpenNow(s, now, hourOverride)
+      && s.badges.soloFriendly
+      && s.menu.some((menu) => menu.underBudget)
   ).length;
   const cvsOpenCount = dongStores.filter(
     (s) => s.cat2 === "cvs" && isOpenNow(s, now, hourOverride)
@@ -119,7 +121,7 @@ export default function AppHomePage() {
           <Link className="tile t-y" href="/result">
             <span className="sticker tossface">🍚</span>
             <span className="tt">오늘 뭐 먹지</span>
-            <span className="ts">지금 {openableCount}곳 열림</span>
+            <span className="ts">기본 조건에 맞는 {openableCount}곳</span>
           </Link>
           <Link className="tile t-b" href="/cvs">
             <span className="sticker tossface">🏪</span>

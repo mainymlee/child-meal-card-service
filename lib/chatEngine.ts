@@ -125,7 +125,7 @@ export function initialChatState(ctx: RecommendContext): ChatState {
       bot(
         hasOpenFood
           ? "안녕하세요! 지금 밤 11시까지 카드를 쓸 수 있어요. 오늘 뭐 먹을지 같이 골라볼까요?"
-          : "안녕하세요! 지금 밤 11시까지 카드를 쓸 수 있어요. 식당은 거의 닫힌 시간이에요 — 편의점 조합을 알려드릴까요?"
+          : "안녕하세요! 지금 밤 11시까지 카드를 쓸 수 있어요. 식당은 거의 닫힌 시간이에요. 편의점 조합을 알려드릴까요?"
       ),
     ],
     quickReplies: menuQuickReplies(hasOpenFood),

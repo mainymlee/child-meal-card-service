@@ -1,6 +1,7 @@
 import { StoreBadgePills } from "@/components/Pill";
 import { cheapestUnderBudgetItem, walkingMinutes } from "@/lib/stores";
 import type { MenuItem, Store } from "@/lib/types";
+import type { VerificationStatus } from "@/lib/ranking";
 
 const CATEGORY_EMOJI = {
   kr: "🍚",
@@ -21,7 +22,7 @@ export function StoreRow({
   store: Store;
   distance: number;
   openNow: boolean;
-  verification: "ok" | "pending";
+  verification: VerificationStatus;
   onClick: () => void;
   recommendedItem?: MenuItem;
 }) {
@@ -45,7 +46,7 @@ export function StoreRow({
       <div>
         <p className="nm">{store.name}</p>
         <p className="mt">
-          {recommendedItem ? "AI 추천 · " : `${store.category} · `}{item
+          {recommendedItem ? "맞춤 추천, " : `${store.category}·`}{item
             ? `${item.name} ${item.price.toLocaleString()}원${priceSuffix}`
             : "메뉴 확인 필요"}
         </p>

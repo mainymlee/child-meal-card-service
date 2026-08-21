@@ -3,9 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useSheet } from "@/lib/overlay/OverlayProvider";
 import { ReportSheet } from "@/components/sheets/ReportSheet";
-import type { Dong } from "@/lib/types";
-
-export function ReportButton({ storeId, dong }: { storeId: string; dong: Dong }) {
+export function ReportButton({ storeId }: { storeId: string }) {
   const router = useRouter();
   const { open } = useSheet();
 
@@ -16,7 +14,6 @@ export function ReportButton({ storeId, dong }: { storeId: string; dong: Dong })
         open(
           <ReportSheet
             storeId={storeId}
-            dong={dong}
             onNavigate={(id) => router.push(`/store/${id}`)}
           />
         )

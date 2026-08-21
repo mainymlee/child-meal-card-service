@@ -104,17 +104,23 @@ export default function ResultPage() {
     [gpsLocation, dong]
   );
   const counts = useMemo(() => {
-    const openOnly = all.filter((s) => isOpenNow(s, now, hourOverride));
-    const byCat2 = (c: string) => openOnly.filter((s) => s.cat2 === c).length;
+    const visible = all.filter((s) => {
+      if (filters.openNow && !isOpenNow(s, now, hourOverride)) return false;
+      if (filters.solo && !s.badges.soloFriendly) return false;
+      if (filters.togo && !s.badges.takeoutAvailable) return false;
+      if (filters.cheap && !s.menu.some((m) => m.underBudget)) return false;
+      return matchesSearch(s, query);
+    });
+    const byCat2 = (c: string) => visible.filter((s) => s.cat2 === c).length;
     return {
-      all: openOnly.length,
+      all: visible.length,
       kr: byCat2("kr"),
       cn: byCat2("cn"),
       wf: byCat2("wf"),
       bs: byCat2("bs"),
       cvs: byCat2("cvs"),
     };
-  }, [all, now, hourOverride]);
+  }, [all, filters, query, now, hourOverride]);
 
   const { list, recommendedMenus } = useMemo(() => {
     const candidates = all.filter((s) => {
@@ -170,10 +176,7 @@ export default function ResultPage() {
 
   const cvsOpenCount = all.filter((s) => s.cat2 === "cvs" && isOpenNow(s, now, hourOverride)).length;
 
-  const mapStores = useMemo(() => all.filter((store) => {
-    if (cat !== "all" && store.cat2 !== cat) return false;
-    return matchesSearch(store, query);
-  }), [all, cat, query]);
+  const mapStores = list;
   const markers: MapMarker[] = useMemo(() => mapStores.map((store) => ({
       id: store.id,
       lat: store.lat,
@@ -197,7 +200,7 @@ export default function ResultPage() {
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="가게·메뉴 검색 · 초성도 돼요 (ㅊㅁㅁㅇ)"
+            placeholder="가게·메뉴 검색, 초성도 돼요 (ㅊㅁㅁㅇ)"
             autoComplete="off"
             aria-label="가게 또는 메뉴 검색"
           />
@@ -213,7 +216,7 @@ export default function ResultPage() {
         <KakaoMap
           center={origin}
           markers={markers}
-          locationLabel={`${gpsLocation ? "현재 위치" : dong} · ${markers.length}곳`}
+          locationLabel={`${gpsLocation ? "현재 위치" : dong}·조건에 맞는 ${markers.length}곳`}
           userLocation={gpsLocation}
           onLocationFound={setGpsLocation}
         />
@@ -223,6 +226,7 @@ export default function ResultPage() {
             <button
               key={key}
               className={`chip ${filters[key] ? "on" : ""}`}
+              aria-pressed={filters[key]}
               onClick={() => toggle(key)}
             >
               {CHIP_LABELS[key]}
@@ -230,18 +234,22 @@ export default function ResultPage() {
           ))}
           <button
             className={`chip ${nearestFirst ? "on" : ""}`}
+            aria-pressed={nearestFirst}
             onClick={() => setNearestFirst((v) => !v)}
           >
             가까운 순
           </button>
         </div>
+        <p className="sub" aria-live="polite" style={{ margin: "-3px 2px 10px", fontSize: 12.5 }}>
+          켜진 필터 {Object.values(filters).filter(Boolean).length}개가 목록·지도·카테고리 수에 함께 적용돼요.
+        </p>
 
         {cat !== "cvs" && cvsOpenCount > 0 ? (
           <button className="cvsbanner" onClick={() => router.push("/cvs")}>
             <span className="ic">🏪</span>
             <div>
               <p className="t">편의점 조합 바로 보기</p>
-              <p className="s">지금 열린 {cvsOpenCount}곳 · 밥+단백질+과일 1만 원 안 조합</p>
+              <p className="s">지금 열린 {cvsOpenCount}곳, 밥+단백질+과일 1만 원 안 조합</p>
             </div>
           </button>
         ) : null}
@@ -251,7 +259,7 @@ export default function ResultPage() {
             {cat === "cvs" ? "가까운 편의점" : "지금 갈 수 있는 곳"}{" "}
             <b>{list.length}곳</b>
           </p>
-          <span>{nearestFirst ? "가까운 순" : cat === "cvs" ? `${dong} 기준` : "AI v2 추천순"}</span>
+          <span>{nearestFirst ? "가까운 순" : cat === "cvs" ? `${gpsLocation ? "현재 위치" : dong} 기준` : "맞춤 추천순"}</span>
         </div>
 
         {list.length === 0 ? (
@@ -259,7 +267,7 @@ export default function ResultPage() {
             <div className="big">🌙</div>
             <h3>{query ? "검색 결과가 없어요" : "지금 조건에 맞는 곳이 없어요"}</h3>
             <p>
-              {query ? "다른 이름이나 초성으로 다시 찾아보세요." : <>{dong} 기준 · 조건을 바꾸거나,<br />근처 편의점 조합을 확인해보세요.</>}
+              {query ? "다른 이름이나 초성으로 다시 찾아보세요." : <>{gpsLocation ? "현재 위치" : dong} 기준으로 조건을 바꾸거나,<br />근처 편의점 조합을 확인해보세요.</>}
             </p>
             {query ? (
               <button className="btn sm" style={{ width: "auto", padding: "0 22px", margin: "0 auto" }} onClick={() => setQuery("")}>
@@ -278,7 +286,7 @@ export default function ResultPage() {
               store={store}
               distance={distanceMeters(origin, store)}
               openNow={isOpenNow(store, now, hourOverride)}
-              verification={verificationStatus(reports, store.id)}
+              verification={verificationStatus(reports, store)}
               recommendedItem={recommendedMenus.get(store.id)}
               onClick={() => router.push(`/store/${store.id}`)}
             />

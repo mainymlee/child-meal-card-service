@@ -207,7 +207,7 @@ export default function ChatPage() {
       return;
     }
     if (kind === "unknown") {
-      appendAndReply(text, "제가 도울 수 있는 건 이런 것들이에요 — 골라주세요!", fallbackQuickReplies());
+      appendAndReply(text, "제가 도울 수 있는 건 이런 것들이에요. 골라주세요!", fallbackQuickReplies());
       return;
     }
     const key = kind === "balance" ? "bal" : kind === "welfare" ? "wel" : "food";
@@ -257,15 +257,15 @@ export default function ChatPage() {
                   isCvs={false}
                   soloFriendly={recommendedStore.badges.soloFriendly}
                   takeoutAvailable={recommendedStore.badges.takeoutAvailable}
-                  verification={verificationStatus(reports, recommendedStore.id)}
+                  verification={verificationStatus(reports, recommendedStore)}
                 />
               </div>
               <p className="nm" style={{ margin: "0 0 2px" }}>
-                {recommendedStore.name} · {state.recommendation!.menuName}
+                {recommendedStore.name}·{state.recommendation!.menuName}
               </p>
               {state.recommendation?.source === "local-ai" ? (
                 <p className="mt" style={{ margin: "0 0 3px" }}>
-                  한끼 개인화 추천 · AI v2
+                  최근 식사와 만족도를 반영한 맞춤 추천
                 </p>
               ) : null}
               <p className="mt" style={{ margin: "0 0 9px" }}>

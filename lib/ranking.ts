@@ -3,6 +3,8 @@ import { distanceMeters } from "./stores";
 import { bestNutritionMenu, nutritionFitScore } from "./nutrition";
 import type { MealFeedback, MealLogEntry, Store } from "./types";
 
+export type VerificationStatus = "confirmed" | "unverified" | "pending";
+
 export function reportCount(
   reports: Record<string, number>,
   storeId: string
@@ -12,9 +14,10 @@ export function reportCount(
 
 export function verificationStatus(
   reports: Record<string, number>,
-  storeId: string
-): "ok" | "pending" {
-  return reportCount(reports, storeId) >= 2 ? "pending" : "ok";
+  store: Pick<Store, "id" | "badges">
+): VerificationStatus {
+  if (reportCount(reports, store.id) >= 2) return "pending";
+  return store.badges.paymentConfirmed ? "confirmed" : "unverified";
 }
 
 interface NutritionScoreOptions {
@@ -42,14 +45,14 @@ export function nutritionScore(store: Store, opts: NutritionScoreOptions): numbe
     const priceComplaints = feedback.filter((item) => item.reason === "price").length;
     score -= (menu.price / 5000) * Math.min(1.5, priceComplaints * 0.25);
   }
-  if (verificationStatus(opts.reports, store.id) === "pending") score -= 6;
+  if (verificationStatus(opts.reports, store) === "pending") score -= 6;
   return score;
 }
 
 export function rankStores(stores: Store[], opts: NutritionScoreOptions): Store[] {
   return [...stores].sort((a, b) => {
-    const aPending = verificationStatus(opts.reports, a.id) === "pending";
-    const bPending = verificationStatus(opts.reports, b.id) === "pending";
+    const aPending = verificationStatus(opts.reports, a) === "pending";
+    const bPending = verificationStatus(opts.reports, b) === "pending";
     if (aPending !== bPending) return aPending ? 1 : -1;
     return nutritionScore(b, opts) - nutritionScore(a, opts);
   });

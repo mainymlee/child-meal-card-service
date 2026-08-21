@@ -1,8 +1,7 @@
 "use client";
 
-import { dongCenter } from "@/lib/persona";
 import { rankStores } from "@/lib/ranking";
-import { distanceMeters, getStoreById, isOpenNow, storesInDong } from "@/lib/stores";
+import { distanceMeters, getStoreById, isOpenNow, storesInDong, storesNear } from "@/lib/stores";
 import { nowInSeoul } from "@/lib/time";
 import { useSheet, useToast } from "@/lib/overlay/OverlayProvider";
 import { useMealLog } from "@/lib/hooks/useMealLog";
@@ -10,15 +9,13 @@ import { useMealFeedback } from "@/lib/hooks/useMealFeedback";
 import { useReports, reportStore } from "@/lib/hooks/useReports";
 import { StoreRow } from "@/components/StoreRow";
 import { verificationStatus } from "@/lib/ranking";
-import type { Dong } from "@/lib/types";
+import { useAppLocation } from "@/lib/location/LocationProvider";
 
 export function ReportSheet({
   storeId,
-  dong,
   onNavigate,
 }: {
   storeId: string;
-  dong: Dong;
   onNavigate: (id: string) => void;
 }) {
   const store = getStoreById(storeId);
@@ -27,19 +24,21 @@ export function ReportSheet({
   const reports = useReports();
   const { close } = useSheet();
   const { show } = useToast();
+  const { gpsLocation } = useAppLocation();
   if (!store) return null;
 
   const now = nowInSeoul();
-  const home = dongCenter(dong);
+  const home = gpsLocation ?? { lat: store.lat, lng: store.lng };
+  const nearbyStores = gpsLocation ? storesNear(gpsLocation) : storesInDong(store.neighborhood);
   const alt = rankStores(
-    storesInDong(dong).filter((s) => s.id !== storeId && isOpenNow(s, now)),
+    nearbyStores.filter((s) => s.id !== storeId && isOpenNow(s, now)),
     { mealLog, home, reports, feedback }
   )[0];
 
   const confirm = () => {
     reportStore(storeId);
     close();
-    show("접수했어요 — 확인 중 배지로 바뀌고 추천에서 뒤로 밀려요");
+    show("접수했어요. 두 건이 모이면 확인 중으로 바뀌고 추천에서 뒤로 밀려요");
   };
 
   return (
@@ -56,7 +55,7 @@ export function ReportSheet({
             store={alt}
             distance={distanceMeters(home, alt)}
             openNow={isOpenNow(alt, now)}
-            verification={verificationStatus(reports, alt.id)}
+            verification={verificationStatus(reports, alt)}
             onClick={() => {
               close();
               onNavigate(alt.id);
@@ -67,6 +66,9 @@ export function ReportSheet({
       <button className="btn" onClick={confirm}>
         확인
       </button>
+      <p className="sub" style={{ margin: "12px 0 0", textAlign: "center" }}>
+        그래도 해결되지 않으면 <a href="tel:129"><b>보건복지상담센터 129</b></a>에 도움을 요청하세요.
+      </p>
     </>
   );
 }

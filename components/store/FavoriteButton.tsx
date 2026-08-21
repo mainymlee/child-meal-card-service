@@ -17,7 +17,7 @@ export function FavoriteButton({ storeId }: { storeId: string }) {
       style={{ color: on ? "var(--red)" : "var(--g400)" }}
       onClick={() => {
         toggleFavorite(storeId);
-        show(on ? "단골에서 뺐어요" : "단골로 저장했어요 — 홈에서 바로 보여요");
+        show(on ? "단골에서 뺐어요" : "단골로 저장했어요. 홈에서 바로 보여요");
       }}
     >
       <HeartIcon filled={on} />

@@ -108,7 +108,7 @@ export default function MePage() {
                 store={store}
                 distance={distanceMeters(home, store)}
                 openNow={isOpenNow(store, now, hourOverride)}
-                verification={verificationStatus(reports, store.id)}
+                verification={verificationStatus(reports, store)}
                 onClick={() => router.push(`/store/${store.id}`)}
               />
             ))
@@ -130,7 +130,7 @@ export default function MePage() {
             />
           </div>
           <div className="mrow" style={{ cursor: "default" }}>
-            소멸 D-7 · D-1 알림
+            소멸 D-7·D-1 알림
             <button
               className={`switch${notif.dday ? " on" : ""}`}
               role="switch"
