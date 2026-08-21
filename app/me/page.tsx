@@ -10,7 +10,7 @@ import { dongCenter } from "@/lib/persona";
 import { distanceMeters, getStoreById, isOpenNow } from "@/lib/stores";
 import type { Store } from "@/lib/types";
 import { verificationStatus } from "@/lib/ranking";
-import { nowInSeoul } from "@/lib/time";
+import { nowInSeoul, toSeoulDate } from "@/lib/time";
 import { useBalance } from "@/lib/hooks/useBalance";
 import { DEFAULT_DONG, useDong } from "@/lib/hooks/useDong";
 import { useExpMode } from "@/lib/hooks/useExpMode";
@@ -28,7 +28,7 @@ const HAS_KAKAO_KEY = Boolean(process.env.NEXT_PUBLIC_KAKAO_MAP_KEY);
 
 export default function MePage() {
   const router = useRouter();
-  const { balance } = useBalance();
+  const { balance, lastUpdatedISO } = useBalance();
   const dong = useDong() ?? DEFAULT_DONG;
   const expMode = useExpMode();
   const favorites = useFavorites();
@@ -39,7 +39,12 @@ export default function MePage() {
   const { open } = useSheet();
 
   const now = nowInSeoul();
-  const plan = calcBalancePlan(balance, now, expMode);
+  const plan = calcBalancePlan(
+    balance,
+    now,
+    expMode,
+    lastUpdatedISO ? toSeoulDate(new Date(lastUpdatedISO)) : null
+  );
   const home = dongCenter(dong);
 
   const favoriteStores = favorites

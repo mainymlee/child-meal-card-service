@@ -36,7 +36,8 @@ export default function AppHomePage() {
   const { remainingDays, dailyRecommended, expiringAmount } = calcBalancePlan(
     balance,
     now,
-    expMode
+    expMode,
+    lastUpdatedISO ? toSeoulDate(new Date(lastUpdatedISO)) : null
   );
   const { cycleEnd } = getCycleInfo(now, expMode);
   const daysInMonth = cycleEnd.getDate();

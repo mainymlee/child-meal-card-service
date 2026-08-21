@@ -23,7 +23,7 @@ import { dongCenter } from "@/lib/persona";
 import { NEIGHBORHOODS } from "@/lib/taxonomy";
 import { getStoreById, isOpenNow, storesInDong } from "@/lib/stores";
 import { verificationStatus } from "@/lib/ranking";
-import { nowInSeoul } from "@/lib/time";
+import { nowInSeoul, toSeoulDate } from "@/lib/time";
 import { DEFAULT_DONG, setDong, useDong } from "@/lib/hooks/useDong";
 import { useDemoHour } from "@/lib/hooks/useDemoHour";
 import { useMealLog } from "@/lib/hooks/useMealLog";
@@ -48,10 +48,18 @@ export default function ChatPage() {
   const mealLog = useMealLog();
   const feedback = useMealFeedback();
   const reports = useReports();
-  const { balance } = useBalance();
+  const { balance, lastUpdatedISO } = useBalance();
   const expMode = useExpMode();
   const now = useMemo(() => nowInSeoul(), []);
-  const balancePlan = useMemo(() => calcBalancePlan(balance, now, expMode), [balance, now, expMode]);
+  const balancePlan = useMemo(
+    () => calcBalancePlan(
+      balance,
+      now,
+      expMode,
+      lastUpdatedISO ? toSeoulDate(new Date(lastUpdatedISO)) : null
+    ),
+    [balance, now, expMode, lastUpdatedISO]
+  );
 
   const ctx: RecommendContext = useMemo(
     () => ({
@@ -66,7 +74,7 @@ export default function ChatPage() {
         remainingBalance: balance,
         remainingDays: balancePlan.remainingDays,
         dailyRecommended: balancePlan.dailyRecommended,
-        recommendedUpperBound: balancePlan.dailyLimit,
+        recommendedUpperBound: balancePlan.recommendedUpperBound,
         officialDailyLimit: null,
         expiringAmount: balancePlan.expiringAmount,
         cycleEnd: balancePlan.cycleEnd.toISOString(),

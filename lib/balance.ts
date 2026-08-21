@@ -7,7 +7,7 @@ export interface CycleInfo {
 
 export interface BalancePlan extends CycleInfo {
   dailyRecommended: number;
-  dailyLimit: number;
+  recommendedUpperBound: number;
   expiringAmount: number;
 }
 
@@ -42,20 +42,28 @@ function roundTo(value: number, step: number): number {
 }
 
 /**
- * dailyRecommended/dailyLimit are derived arithmetically from the balance.
- * expiringAmount is the rounding residue if the user spends exactly
- * dailyRecommended every remaining day — it is not meant to reproduce any
- * specific illustrative figure, just to reflect what rounding leaves over.
+ * The daily target is fixed when the user records the balance. It must not
+ * rise merely because time passed while the stored balance stayed stale.
+ * Updating the balance creates a new plan from that day onward.
  */
 export function calcBalancePlan(
   balance: number,
   today: Date,
-  expMode: ExpMode = "month"
+  expMode: ExpMode = "month",
+  balanceUpdatedAt?: Date | null
 ): BalancePlan {
   const { cycleEnd, remainingDays } = getCycleInfo(today, expMode);
-  const rawDaily = balance / remainingDays;
+  const updatedInCurrentCycle = balanceUpdatedAt != null &&
+    balanceUpdatedAt <= today &&
+    (expMode === "year"
+      ? balanceUpdatedAt.getFullYear() === today.getFullYear()
+      : balanceUpdatedAt.getFullYear() === today.getFullYear() &&
+        balanceUpdatedAt.getMonth() === today.getMonth());
+  const planStartedAt = updatedInCurrentCycle ? balanceUpdatedAt : today;
+  const plannedDays = getCycleInfo(planStartedAt, expMode).remainingDays;
+  const rawDaily = balance / plannedDays;
   const dailyRecommended = Math.max(0, roundTo(Math.floor(rawDaily), 100));
-  const dailyLimit = Math.max(
+  const recommendedUpperBound = Math.max(
     dailyRecommended,
     Math.ceil((dailyRecommended * 1.4) / 1000) * 1000
   );
@@ -64,5 +72,5 @@ export function calcBalancePlan(
     balance - dailyRecommended * remainingDays
   );
 
-  return { cycleEnd, remainingDays, dailyRecommended, dailyLimit, expiringAmount };
+  return { cycleEnd, remainingDays, dailyRecommended, recommendedUpperBound, expiringAmount };
 }

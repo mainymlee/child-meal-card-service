@@ -65,8 +65,8 @@ export default function BalancePage() {
               <b>{plan.dailyRecommended.toLocaleString()}원</b>
             </div>
             <div className="r">
-              <span>1일 결제 한도</span>
-              <b>{plan.dailyLimit.toLocaleString()}원</b>
+              <span>앱 권장 사용 상한</span>
+              <b>{plan.recommendedUpperBound.toLocaleString()}원</b>
             </div>
             <div className="r hl">
               <span>이대로면 사라지는 금액</span>

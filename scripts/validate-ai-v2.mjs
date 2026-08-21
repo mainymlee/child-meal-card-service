@@ -51,6 +51,7 @@ const { spendingPaceScore } = loadTypeScript(
 const { evaluateEligibility } = loadTypeScript(
   path.join(root, "lib/recommendation/eligibility.ts")
 );
+const { calcBalancePlan } = loadTypeScript(path.join(root, "lib/balance.ts"));
 
 const now = new Date(2026, 7, 21, 12, 0, 0);
 const baseContext = {
@@ -107,6 +108,29 @@ const store = {
 };
 
 const tests = [
+  ["잔액을 다시 입력하지 않으면 날짜가 지나도 하루 권장액이 커지지 않는다", () => {
+    const updatedAt = new Date(2026, 7, 21, 12, 0, 0);
+    const first = calcBalancePlan(90000, updatedAt, "month", updatedAt);
+    const later = calcBalancePlan(
+      90000,
+      new Date(2026, 7, 24, 12, 0, 0),
+      "month",
+      updatedAt
+    );
+    assert.equal(later.dailyRecommended, first.dailyRecommended);
+    assert.equal(later.recommendedUpperBound, first.recommendedUpperBound);
+  }],
+  ["사용 계획이 늦어지면 권장액 대신 소멸 예상액이 증가한다", () => {
+    const updatedAt = new Date(2026, 7, 21, 12, 0, 0);
+    const first = calcBalancePlan(90000, updatedAt, "month", updatedAt);
+    const later = calcBalancePlan(
+      90000,
+      new Date(2026, 7, 24, 12, 0, 0),
+      "month",
+      updatedAt
+    );
+    assert.ok(later.expiringAmount > first.expiringAmount);
+  }],
   ["오늘 권장액에 가까운 가격을 우선한다", () => {
     const target = spendingPaceScore(9000, baseContext);
     assert.ok(target > spendingPaceScore(5000, baseContext));
