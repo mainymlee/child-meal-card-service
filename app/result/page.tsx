@@ -34,7 +34,6 @@ const CHIP_LABELS: Record<FilterKey, string> = {
   cheap: "1만원 이하",
 };
 
-const MAX_MARKERS = 14;
 const CHOSEONG = ["ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
 const CHOSEONG_NORMALIZE: Record<string, string> = { ㄲ: "ㄱ", ㄸ: "ㄷ", ㅃ: "ㅂ", ㅆ: "ㅅ", ㅉ: "ㅈ" };
 
@@ -168,7 +167,11 @@ export default function ResultPage() {
 
   const cvsOpenCount = all.filter((s) => s.cat2 === "cvs" && isOpenNow(s, now, hourOverride)).length;
 
-  const markers: MapMarker[] = list.slice(0, MAX_MARKERS).map((store) => ({
+  const mapStores = all.filter((store) => {
+    if (cat !== "all" && store.cat2 !== cat) return false;
+    return matchesSearch(store, query);
+  });
+  const markers: MapMarker[] = mapStores.map((store) => ({
     id: store.id,
     lat: store.lat,
     lng: store.lng,
@@ -207,7 +210,7 @@ export default function ResultPage() {
         <KakaoMap
           center={origin}
           markers={markers}
-          locationLabel={gpsLocation ? "현재 위치" : dong}
+          locationLabel={`${gpsLocation ? "현재 위치" : dong} · ${markers.length}곳`}
           userLocation={gpsLocation}
           onLocationFound={setGpsLocation}
         />

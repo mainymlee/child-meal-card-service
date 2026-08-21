@@ -30,6 +30,34 @@ declare namespace kakao.maps {
     setMap(map: Map | null): void;
   }
 
+  interface MarkerOptions {
+    position: LatLng;
+    title?: string;
+    clickable?: boolean;
+  }
+
+  class Marker {
+    constructor(options: MarkerOptions);
+    setMap(map: Map | null): void;
+  }
+
+  interface MarkerClustererOptions {
+    map: Map;
+    averageCenter?: boolean;
+    minLevel?: number;
+    disableClickZoom?: boolean;
+  }
+
+  class MarkerClusterer {
+    constructor(options: MarkerClustererOptions);
+    addMarkers(markers: Marker[]): void;
+    clear(): void;
+  }
+
+  namespace event {
+    function addListener(target: Marker, type: "click", handler: () => void): void;
+  }
+
   function load(callback: () => void): void;
 }
 

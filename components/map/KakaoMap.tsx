@@ -46,6 +46,8 @@ export function KakaoMap({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const overlaysRef = useRef<kakao.maps.CustomOverlay[]>([]);
+  const markersRef = useRef<kakao.maps.Marker[]>([]);
+  const clustererRef = useRef<kakao.maps.MarkerClusterer | null>(null);
   const [ready, setReady] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -99,35 +101,33 @@ export function KakaoMap({
         center: new window.kakao.maps.LatLng(center.lat, center.lng),
         level: 4,
       });
+      clustererRef.current = new window.kakao.maps.MarkerClusterer({
+        map: mapRef.current,
+        averageCenter: true,
+        minLevel: 3,
+      });
       setReady(true);
     });
   };
 
   useEffect(() => {
     if (!ready || !mapRef.current) return;
+    clustererRef.current?.clear();
+    markersRef.current.forEach((marker) => marker.setMap(null));
     overlaysRef.current.forEach((o) => o.setMap(null));
-    overlaysRef.current = markers.map((marker) => {
-      const content = document.createElement("div");
-      content.className = `kpin cat-${marker.category ?? "kr"}`;
-      const label = document.createElement("button");
-      label.type = "button";
-      label.className = "b";
-      label.setAttribute("aria-label", `${marker.label} 상세 보기`);
-      label.title = marker.label;
-      label.innerHTML = `<span class="tossface">${CATEGORY_EMOJI[marker.category ?? "kr"]}</span>${marker.label}`;
-      if (marker.onClick) label.addEventListener("click", marker.onClick);
-      const tail = document.createElement("div");
-      tail.className = "tail";
-      content.append(label, tail);
-
-      const overlay = new window.kakao.maps.CustomOverlay({
+    overlaysRef.current = [];
+    markersRef.current = markers.map((marker) => {
+      const mapMarker = new window.kakao.maps.Marker({
         position: new window.kakao.maps.LatLng(marker.lat, marker.lng),
-        content,
-        yAnchor: 1.3,
+        title: `${CATEGORY_EMOJI[marker.category ?? "kr"]} ${marker.label}`,
+        clickable: Boolean(marker.onClick),
       });
-      overlay.setMap(mapRef.current);
-      return overlay;
+      if (marker.onClick) {
+        window.kakao.maps.event.addListener(mapMarker, "click", marker.onClick);
+      }
+      return mapMarker;
     });
+    clustererRef.current?.addMarkers(markersRef.current);
 
     if (userLocation) {
       const content = document.createElement("div");
@@ -144,6 +144,9 @@ export function KakaoMap({
     }
 
     return () => {
+      clustererRef.current?.clear();
+      markersRef.current.forEach((marker) => marker.setMap(null));
+      markersRef.current = [];
       overlaysRef.current.forEach((overlay) => overlay.setMap(null));
       overlaysRef.current = [];
     };
@@ -200,7 +203,7 @@ export function KakaoMap({
   return (
     <div className={`mapwrap round${expanded ? " big" : ""}`} style={{ height: mapHeight }}>
       <Script
-        src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_KEY}&autoload=false`}
+        src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_KEY}&autoload=false&libraries=clusterer`}
         strategy="afterInteractive"
         onReady={() => {
           setLoadFailed(false);
