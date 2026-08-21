@@ -5,6 +5,20 @@
 > 개발 단계: 기획 확정 및 1차 개발 착수  
 > 기준 시스템: 브라우저 기반 자체 메뉴추천 AI v1
 
+## 0. 개발 진행 상태
+
+2026-08-21 기준 Sprint 1의 첫 운영 버전을 구현했다.
+
+- 알고리즘 버전: `2.0.0-alpha.1`
+- 챗봇의 메뉴 추천을 AI v2 파이프라인으로 전환
+- 잔액·남은 일수·하루 권장액·소멸 예상액 연결
+- 기간 기반 예산 사용 점수를 별도 최우선 점수로 분리
+- 영업·지역·잔액·메뉴 신뢰도·결제 상태 필터 구현
+- 점수 세부내역과 추천 이유 생성 구현
+- 핵심 자동 시나리오 6개 통과
+
+공식 1일 결제 한도와 이월·소멸 규정은 아직 확인되지 않았다. 따라서 현재 앱의 `recommendedUpperBound`는 소비 계획을 위한 앱 권장 상한이며 공식 카드 한도가 아니다. 실제 잔액만 강제 제한으로 적용하고, 공식 한도는 확인 후 `officialDailyLimit`에 별도로 입력한다.
+
 ## 1. 개발 목적
 
 메뉴추천 AI v2의 가장 중요한 목적은 **남은 급식카드 예산을 남은 사용 기간에 맞춰 계획적으로 사용하도록 돕는 것**이다. 추천은 단순히 가장 저렴하거나 인기 있는 메뉴를 고르는 것이 아니라, 오늘 사용해야 할 권장 금액과 소멸 예상액을 먼저 계산하고 그 범위 안에서 최근 식사의 영양 균형과 개인 취향에 맞는 메뉴를 선택한다.
@@ -170,7 +184,8 @@ interface RecommendationContext {
     remainingBalance: number;
     remainingDays: number;
     dailyRecommended: number;
-    dailyLimit: number;
+    recommendedUpperBound: number;
+    officialDailyLimit: number | null;
     expiringAmount: number;
     cycleEnd: string;
   };

@@ -24,7 +24,8 @@ export interface SpendingPlanContext {
   remainingBalance: number;
   remainingDays: number;
   dailyRecommended: number;
-  dailyLimit: number;
+  recommendedUpperBound: number;
+  officialDailyLimit: number | null;
   expiringAmount: number;
   cycleEnd: string;
 }
@@ -63,6 +64,7 @@ export interface RecommendationReason {
 }
 
 export interface RecommendationScoreBreakdown {
+  spendingPace: number;
   base: number;
   nutrition: number;
   preference: number;

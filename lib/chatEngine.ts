@@ -1,6 +1,9 @@
-import { rankStores } from "./ranking";
 import { isOpenNow } from "./stores";
-import { bestNutritionMenu } from "./nutrition";
+import { recommendMeals } from "./recommendation/recommend";
+import {
+  DEFAULT_FOOD_PREFERENCES,
+  type SpendingPlanContext,
+} from "./recommendation/types";
 import type { Dong, MealFeedback, MealLogEntry, Store } from "./types";
 
 export type SoloAnswer = "혼자" | "같이";
@@ -24,6 +27,7 @@ export interface Recommendation {
   price: number;
   reason?: string;
   source?: "local-ai";
+  algorithmVersion?: string;
 }
 
 export type ChatStep = "menu" | "ask_solo" | "ask_dine_mode" | "result";
@@ -45,6 +49,7 @@ export interface RecommendContext {
   home: { lat: number; lng: number };
   reports: Record<string, number>;
   feedback?: MealFeedback[];
+  spendingPlan: SpendingPlanContext;
 }
 
 let messageCounter = 0;
@@ -60,39 +65,37 @@ function me(text: string): ChatMessage {
 }
 
 export function recommendStore(ctx: RecommendContext, opts: { solo?: SoloAnswer; dineMode?: DineMode }): Recommendation | null {
-  const openNow = ctx.stores.filter((s) =>
-    isOpenNow(s, ctx.now, ctx.hourOverride) && s.cat2 !== "cvs" && s.menu.length > 0
-  );
-  if (!openNow.length) return null;
-
-  let candidates = openNow;
-  if (opts.dineMode === "포장") {
-    candidates = candidates.filter((s) => s.badges.takeoutAvailable);
-  }
-  if (!candidates.length) candidates = openNow;
-
-  if (opts.solo === "혼자") {
-    const soloFriendly = candidates.filter((s) => s.badges.soloFriendly);
-    if (soloFriendly.length) candidates = soloFriendly;
-  }
-
-  const ranked = rankStores(candidates, {
-    mealLog: ctx.mealLog,
-    home: ctx.home,
+  const recommendationContext = {
+    neighborhood: ctx.stores[0]?.neighborhood ?? "후평동" as const,
+    spendingPlan: ctx.spendingPlan,
+    diningMode: opts.solo === "혼자" ? "solo" as const : "together" as const,
+    serviceMode: opts.dineMode === "포장" ? "takeout" as const
+      : opts.dineMode === "가게에서" ? "dine-in" as const : "any" as const,
+    now: ctx.now,
+    hourOverride: ctx.hourOverride,
+    location: { ...ctx.home, source: "dong-center" as const },
+    mealHistory: ctx.mealLog,
+    feedback: ctx.feedback ?? [],
+    preferences: DEFAULT_FOOD_PREFERENCES,
     reports: ctx.reports,
-    feedback: ctx.feedback,
-  });
-
-  const top = ranked[0];
+  };
+  let top = recommendMeals(ctx.stores, recommendationContext, 1)[0];
+  if (!top && (recommendationContext.diningMode === "solo" || recommendationContext.serviceMode === "takeout")) {
+    top = recommendMeals(ctx.stores, {
+      ...recommendationContext,
+      diningMode: "together",
+      serviceMode: "any",
+    }, 1)[0];
+  }
   if (!top) return null;
-  const item = bestNutritionMenu(top, ctx.mealLog, ctx.feedback) ?? top.menu[0];
   return {
-    storeId: top.id,
-    storeName: top.name,
-    menuName: item.name,
-    price: item.price,
-    reason: "영양 균형, 거리, 예산과 최근 식사 만족도를 함께 고려했어요.",
+    storeId: top.store.id,
+    storeName: top.store.name,
+    menuName: top.menuName,
+    price: top.estimatedPrice,
+    reason: top.reasons.map((reason) => reason.label).join(" "),
     source: "local-ai",
+    algorithmVersion: top.algorithmVersion,
   };
 }
 

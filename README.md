@@ -90,6 +90,7 @@ npm run refine-menus
 ```bash
 npm run lint
 npm run build
+npm run validate-ai
 ```
 
 ## 개발 문서

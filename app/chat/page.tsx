@@ -29,6 +29,9 @@ import { useDemoHour } from "@/lib/hooks/useDemoHour";
 import { useMealLog } from "@/lib/hooks/useMealLog";
 import { useMealFeedback } from "@/lib/hooks/useMealFeedback";
 import { useReports } from "@/lib/hooks/useReports";
+import { useBalance } from "@/lib/hooks/useBalance";
+import { useExpMode } from "@/lib/hooks/useExpMode";
+import { calcBalancePlan } from "@/lib/balance";
 import type { Dong } from "@/lib/types";
 
 let idCounter = 0;
@@ -45,7 +48,10 @@ export default function ChatPage() {
   const mealLog = useMealLog();
   const feedback = useMealFeedback();
   const reports = useReports();
+  const { balance } = useBalance();
+  const expMode = useExpMode();
   const now = useMemo(() => nowInSeoul(), []);
+  const balancePlan = useMemo(() => calcBalancePlan(balance, now, expMode), [balance, now, expMode]);
 
   const ctx: RecommendContext = useMemo(
     () => ({
@@ -56,8 +62,17 @@ export default function ChatPage() {
       home: dongCenter(dong),
       reports,
       feedback,
+      spendingPlan: {
+        remainingBalance: balance,
+        remainingDays: balancePlan.remainingDays,
+        dailyRecommended: balancePlan.dailyRecommended,
+        recommendedUpperBound: balancePlan.dailyLimit,
+        officialDailyLimit: null,
+        expiringAmount: balancePlan.expiringAmount,
+        cycleEnd: balancePlan.cycleEnd.toISOString(),
+      },
     }),
-    [dong, now, hourOverride, mealLog, reports, feedback]
+    [dong, now, hourOverride, mealLog, reports, feedback, balance, balancePlan]
   );
 
   const [state, setState] = useState(() => initialChatState(ctx));
@@ -237,7 +252,9 @@ export default function ChatPage() {
                 {recommendedStore.name} · {state.recommendation!.menuName}
               </p>
               {state.recommendation?.source === "local-ai" ? (
-                <p className="mt" style={{ margin: "0 0 3px" }}>한끼 개인화 추천</p>
+                <p className="mt" style={{ margin: "0 0 3px" }}>
+                  한끼 개인화 추천 · AI v2
+                </p>
               ) : null}
               <p className="mt" style={{ margin: "0 0 9px" }}>
                 {state.recommendation!.price.toLocaleString()}원
