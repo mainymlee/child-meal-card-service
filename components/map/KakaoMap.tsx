@@ -14,6 +14,34 @@ const CATEGORY_EMOJI = {
   cvs: "🏪",
 } as const;
 
+const CATEGORY_COLOR: Record<SimplifiedCategory, string> = {
+  kr: "#f7d354",
+  cn: "#f7cfdc",
+  wf: "#c7ddf5",
+  bs: "#dcd3f7",
+  cvs: "#fbf7ee",
+};
+
+const STORE_MARKER_IMAGES = new Map<SimplifiedCategory, kakao.maps.MarkerImage>();
+
+function createStoreMarkerImage(category: SimplifiedCategory) {
+  const cached = STORE_MARKER_IMAGES.get(category);
+  if (cached) return cached;
+  const color = CATEGORY_COLOR[category];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="38" height="46" viewBox="0 0 38 46">
+    <path d="M21 44 8 27C1 18 5 4 17 2c13-2 21 8 18 19-2 7-8 14-14 23Z" fill="#17151c" opacity=".22"/>
+    <path d="M19 41 6 24C-1 15 4 2 16 1c12-1 20 9 17 19-2 7-8 14-14 21Z" fill="${color}" stroke="#17151c" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="17" cy="16" r="6" fill="#fff" stroke="#17151c" stroke-width="2.5"/>
+  </svg>`;
+  const image = new window.kakao.maps.MarkerImage(
+    `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+    new window.kakao.maps.Size(38, 46),
+    { offset: new window.kakao.maps.Point(19, 41) }
+  );
+  STORE_MARKER_IMAGES.set(category, image);
+  return image;
+}
+
 export interface MapMarker {
   id: string;
   lat: number;
@@ -105,6 +133,19 @@ export function KakaoMap({
         map: mapRef.current,
         averageCenter: true,
         minLevel: 3,
+        styles: [{
+          width: "44px",
+          height: "44px",
+          background: "#f7d354",
+          border: "2.5px solid #17151c",
+          borderRadius: "50%",
+          boxShadow: "3px 3px 0 #17151c",
+          color: "#17151c",
+          textAlign: "center",
+          fontSize: "13px",
+          fontWeight: "900",
+          lineHeight: "39px",
+        }],
       });
       setReady(true);
     });
@@ -121,6 +162,7 @@ export function KakaoMap({
         position: new window.kakao.maps.LatLng(marker.lat, marker.lng),
         title: `${CATEGORY_EMOJI[marker.category ?? "kr"]} ${marker.label}`,
         clickable: Boolean(marker.onClick),
+        image: createStoreMarkerImage(marker.category ?? "kr"),
       });
       if (marker.onClick) {
         window.kakao.maps.event.addListener(mapMarker, "click", marker.onClick);

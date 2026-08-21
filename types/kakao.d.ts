@@ -6,6 +6,14 @@ declare namespace kakao.maps {
     constructor(lat: number, lng: number);
   }
 
+  class Size {
+    constructor(width: number, height: number);
+  }
+
+  class Point {
+    constructor(x: number, y: number);
+  }
+
   interface MapOptions {
     center: LatLng;
     level?: number;
@@ -34,6 +42,15 @@ declare namespace kakao.maps {
     position: LatLng;
     title?: string;
     clickable?: boolean;
+    image?: MarkerImage;
+  }
+
+  interface MarkerImageOptions {
+    offset?: Point;
+  }
+
+  class MarkerImage {
+    constructor(src: string, size: Size, options?: MarkerImageOptions);
   }
 
   class Marker {
@@ -46,6 +63,7 @@ declare namespace kakao.maps {
     averageCenter?: boolean;
     minLevel?: number;
     disableClickZoom?: boolean;
+    styles?: Array<Record<string, string>>;
   }
 
   class MarkerClusterer {
