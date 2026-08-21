@@ -39,12 +39,16 @@ export function evaluateEligibility(
   distanceMeters: number
 ): EligibilityResult {
   const reasons: IneligibilityReason[] = [];
+  const mealBudget = Math.min(
+    context.spendingPlan.remainingBalance,
+    context.spendingPlan.dailyLimit
+  );
 
   if (store.neighborhood !== context.neighborhood) reasons.push("wrong-neighborhood");
   if (store.cat2 === "cvs") reasons.push("convenience-store");
   if (!isOpenNow(store, context.now, context.hourOverride)) reasons.push("closed");
   if (!store.menu.length || store.menuSource === "unverified") reasons.push("unverified-menu");
-  if (!store.menu.some((menu) => menu.price <= context.budget)) reasons.push("over-budget");
+  if (!store.menu.some((menu) => menu.price <= mealBudget)) reasons.push("over-budget");
   if (menuContainsKeyword(store, context.preferences.allergyKeywords)) {
     reasons.push("allergy-keyword");
   }
@@ -65,4 +69,3 @@ export function evaluateEligibility(
 export function eligibleMenus(store: Store, budget: number) {
   return store.menu.filter((menu) => menu.price <= budget);
 }
-

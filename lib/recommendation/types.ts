@@ -20,9 +20,18 @@ export interface UserFoodPreferences {
   maxWalkingMeters?: number;
 }
 
+export interface SpendingPlanContext {
+  remainingBalance: number;
+  remainingDays: number;
+  dailyRecommended: number;
+  dailyLimit: number;
+  expiringAmount: number;
+  cycleEnd: string;
+}
+
 export interface RecommendationContext {
   neighborhood: Dong;
-  budget: number;
+  spendingPlan: SpendingPlanContext;
   diningMode: DiningMode;
   serviceMode: ServiceMode;
   now: Date;
@@ -39,6 +48,7 @@ export interface RecommendationContext {
 }
 
 export type RecommendationReasonCode =
+  | "spending-pace"
   | "nutrition"
   | "preference"
   | "distance"
@@ -84,4 +94,3 @@ export const DEFAULT_FOOD_PREFERENCES: UserFoodPreferences = {
   spiceLevel: "normal",
   portion: "normal",
 };
-
