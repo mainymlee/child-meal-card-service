@@ -21,7 +21,7 @@ import {
 } from "@/lib/chatEngine";
 import { dongCenter } from "@/lib/persona";
 import { NEIGHBORHOODS } from "@/lib/taxonomy";
-import { getStoreById, isOpenNow, storesInDong } from "@/lib/stores";
+import { getStoreById, isOpenNow, storesInDong, storesNear } from "@/lib/stores";
 import { verificationStatus } from "@/lib/ranking";
 import { nowInSeoul, toSeoulDate } from "@/lib/time";
 import { DEFAULT_DONG, setDong, useDong } from "@/lib/hooks/useDong";
@@ -33,6 +33,7 @@ import { useBalance } from "@/lib/hooks/useBalance";
 import { useExpMode } from "@/lib/hooks/useExpMode";
 import { calcBalancePlan } from "@/lib/balance";
 import type { Dong } from "@/lib/types";
+import { useAppLocation } from "@/lib/location/LocationProvider";
 
 let idCounter = 0;
 function makeMessage(from: "bot" | "me", text: string): ChatMessage {
@@ -50,6 +51,7 @@ export default function ChatPage() {
   const reports = useReports();
   const { balance, lastUpdatedISO } = useBalance();
   const expMode = useExpMode();
+  const { gpsLocation, clearGpsLocation } = useAppLocation();
   const now = useMemo(() => nowInSeoul(), []);
   const balancePlan = useMemo(
     () => calcBalancePlan(
@@ -63,11 +65,12 @@ export default function ChatPage() {
 
   const ctx: RecommendContext = useMemo(
     () => ({
-      stores: storesInDong(dong),
+      stores: gpsLocation ? storesNear(gpsLocation) : storesInDong(dong),
       now,
       hourOverride,
       mealLog,
-      home: dongCenter(dong),
+      home: gpsLocation ?? dongCenter(dong),
+      locationSource: gpsLocation ? "gps" : "dong-center",
       reports,
       feedback,
       spendingPlan: {
@@ -80,7 +83,7 @@ export default function ChatPage() {
         cycleEnd: balancePlan.cycleEnd.toISOString(),
       },
     }),
-    [dong, now, hourOverride, mealLog, reports, feedback, balance, balancePlan]
+    [dong, gpsLocation, now, hourOverride, mealLog, reports, feedback, balance, balancePlan]
   );
 
   const [state, setState] = useState(() => initialChatState(ctx));
@@ -159,6 +162,7 @@ export default function ChatPage() {
     }
     if (key.startsWith("dong:")) {
       const next = key.slice(5) as Dong;
+      clearGpsLocation();
       setDong(next);
       appendAndReply(
         label,

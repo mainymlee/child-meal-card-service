@@ -44,7 +44,9 @@ export function evaluateEligibility(
     context.spendingPlan.officialDailyLimit ?? context.spendingPlan.recommendedUpperBound
   );
 
-  if (store.neighborhood !== context.neighborhood) reasons.push("wrong-neighborhood");
+  if (context.location.source === "dong-center" && store.neighborhood !== context.neighborhood) {
+    reasons.push("wrong-neighborhood");
+  }
   if (store.cat2 === "cvs") reasons.push("convenience-store");
   if (!isOpenNow(store, context.now, context.hourOverride)) reasons.push("closed");
   if (!store.menu.length || store.menuSource === "unverified") reasons.push("unverified-menu");

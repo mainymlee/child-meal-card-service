@@ -11,9 +11,10 @@ import { dongCenter } from "@/lib/persona";
 import { DEFAULT_DONG, useDong } from "@/lib/hooks/useDong";
 import { useDemoHour } from "@/lib/hooks/useDemoHour";
 import { useReports } from "@/lib/hooks/useReports";
-import { distanceMeters, isOpenNow, storesInDong } from "@/lib/stores";
+import { distanceMeters, isOpenNow, storesInDong, storesNear } from "@/lib/stores";
 import { verificationStatus } from "@/lib/ranking";
 import { nowInSeoul } from "@/lib/time";
+import { useAppLocation } from "@/lib/location/LocationProvider";
 
 export default function CvsPage() {
   const router = useRouter();
@@ -22,10 +23,12 @@ export default function CvsPage() {
   const reports = useReports();
   const now = useMemo(() => nowInSeoul(), []);
   const home = dongCenter(dong);
+  const { gpsLocation } = useAppLocation();
+  const origin = gpsLocation ?? home;
 
-  const openCvs = storesInDong(dong)
+  const openCvs = (gpsLocation ? storesNear(gpsLocation) : storesInDong(dong))
     .filter((s) => s.cat2 === "cvs" && isOpenNow(s, now, hourOverride))
-    .sort((a, b) => distanceMeters(home, a) - distanceMeters(home, b));
+    .sort((a, b) => distanceMeters(origin, a) - distanceMeters(origin, b));
 
   return (
     <>
@@ -89,7 +92,7 @@ export default function CvsPage() {
             가까운 편의점 <b>{openCvs.length}곳</b>
           </p>
           <span>
-            {dong} · {String(now.getHours()).padStart(2, "0")}:
+            {gpsLocation ? "현재 위치" : dong} · {String(now.getHours()).padStart(2, "0")}:
             {String(now.getMinutes()).padStart(2, "0")}
           </span>
         </div>
@@ -98,7 +101,7 @@ export default function CvsPage() {
             <StoreRow
               key={store.id}
               store={store}
-              distance={distanceMeters(home, store)}
+              distance={distanceMeters(origin, store)}
               openNow
               verification={verificationStatus(reports, store.id)}
               onClick={() => router.push(`/store/${store.id}`)}

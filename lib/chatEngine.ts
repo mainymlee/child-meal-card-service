@@ -2,6 +2,7 @@ import { isOpenNow } from "./stores";
 import { recommendMeals } from "./recommendation/recommend";
 import {
   DEFAULT_FOOD_PREFERENCES,
+  type LocationSource,
   type SpendingPlanContext,
 } from "./recommendation/types";
 import type { Dong, MealFeedback, MealLogEntry, Store } from "./types";
@@ -47,6 +48,7 @@ export interface RecommendContext {
   hourOverride?: number | null;
   mealLog: MealLogEntry[];
   home: { lat: number; lng: number };
+  locationSource: LocationSource;
   reports: Record<string, number>;
   feedback?: MealFeedback[];
   spendingPlan: SpendingPlanContext;
@@ -73,7 +75,7 @@ export function recommendStore(ctx: RecommendContext, opts: { solo?: SoloAnswer;
       : opts.dineMode === "가게에서" ? "dine-in" as const : "any" as const,
     now: ctx.now,
     hourOverride: ctx.hourOverride,
-    location: { ...ctx.home, source: "dong-center" as const },
+    location: { ...ctx.home, source: ctx.locationSource },
     mealHistory: ctx.mealLog,
     feedback: ctx.feedback ?? [],
     preferences: DEFAULT_FOOD_PREFERENCES,

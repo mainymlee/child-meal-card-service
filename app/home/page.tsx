@@ -11,12 +11,13 @@ import { useSheet } from "@/lib/overlay/OverlayProvider";
 import { ExpirySheet } from "@/components/sheets/ExpirySheet";
 import { HelpSheet } from "@/components/sheets/HelpSheet";
 import { nowInSeoul, toSeoulDate } from "@/lib/time";
-import { getStoreById, isOpenNow, storesInDong } from "@/lib/stores";
+import { distanceMeters, getStoreById, isOpenNow, storesInDong, storesNear } from "@/lib/stores";
 import { matchForPersona, profileToTags, WELFARE_POLICIES } from "@/lib/welfare";
 import { useProfile } from "@/lib/hooks/useProfile";
 import { TabBar } from "@/components/layout/TabBar";
 import { DongButton } from "@/components/layout/DongButton";
 import { CheckIcon, ChevronIcon, WarnIcon } from "@/components/icons";
+import { useAppLocation } from "@/lib/location/LocationProvider";
 
 function formatDate(iso: string): string {
   const d = toSeoulDate(new Date(iso));
@@ -31,6 +32,7 @@ export default function AppHomePage() {
   const profile = useProfile();
   const { hourOverride } = useDemoHour();
   const { open } = useSheet();
+  const { gpsLocation } = useAppLocation();
 
   const now = nowInSeoul();
   const { remainingDays, dailyRecommended, dailySpendNeeded, expiringAmount } = calcBalancePlan(
@@ -44,7 +46,7 @@ export default function AppHomePage() {
   const elapsedDays = Math.max(0, daysInMonth - remainingDays);
   const elapsedPct = Math.min(95, Math.max(5, Math.round((elapsedDays / daysInMonth) * 100)));
 
-  const dongStores = storesInDong(dong);
+  const dongStores = gpsLocation ? storesNear(gpsLocation) : storesInDong(dong);
   const openableCount = dongStores.filter(
     (s) => s.cat2 !== "cvs" && isOpenNow(s, now, hourOverride)
   ).length;
@@ -54,7 +56,10 @@ export default function AppHomePage() {
 
   const favoriteInDong = favorites
     .map(getStoreById)
-    .find((s) => s && s.neighborhood === dong);
+    .filter((s) => s && (gpsLocation || s.neighborhood === dong))
+    .sort((a, b) => gpsLocation && a && b
+      ? distanceMeters(gpsLocation, a) - distanceMeters(gpsLocation, b)
+      : 0)[0];
 
   const newBenefitCount = matchForPersona(profileToTags(profile), WELFARE_POLICIES).filter(
     (p) => p.status === "신청가능"

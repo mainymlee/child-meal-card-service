@@ -14,6 +14,15 @@ export function storesInDong(dong: Dong): Store[] {
   return STORES.filter((s) => s.neighborhood === dong);
 }
 
+export const GPS_STORE_RADIUS_METERS = 5_000;
+
+export function storesNear(
+  location: { lat: number; lng: number },
+  radiusMeters = GPS_STORE_RADIUS_METERS
+): Store[] {
+  return STORES.filter((store) => distanceMeters(location, store) <= radiusMeters);
+}
+
 function toMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(":").map(Number);
   return h * 60 + m;

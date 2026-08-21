@@ -16,13 +16,14 @@ import { useMealFeedback } from "@/lib/hooks/useMealFeedback";
 import { useReports } from "@/lib/hooks/useReports";
 import { useBalance } from "@/lib/hooks/useBalance";
 import { useExpMode } from "@/lib/hooks/useExpMode";
-import { distanceMeters, isOpenNow, storesInDong } from "@/lib/stores";
+import { distanceMeters, isOpenNow, storesInDong, storesNear } from "@/lib/stores";
 import { rankStores, verificationStatus } from "@/lib/ranking";
 import { nowInSeoul, toSeoulDate } from "@/lib/time";
 import { calcBalancePlan } from "@/lib/balance";
 import { recommendMeals } from "@/lib/recommendation/recommend";
 import { DEFAULT_FOOD_PREFERENCES } from "@/lib/recommendation/types";
 import type { MenuItem } from "@/lib/types";
+import { useAppLocation } from "@/lib/location/LocationProvider";
 
 type FilterKey = "openNow" | "solo" | "togo" | "cheap";
 
@@ -75,7 +76,7 @@ export default function ResultPage() {
   const expMode = useExpMode();
   const now = useMemo(() => nowInSeoul(), []);
   const home = dongCenter(dong);
-  const [gpsLocation, setGpsLocation] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
+  const { gpsLocation, setGpsLocation } = useAppLocation();
   const origin = gpsLocation ?? home;
   const balancePlan = useMemo(
     () => calcBalancePlan(
@@ -99,7 +100,7 @@ export default function ResultPage() {
 
   const toggle = (key: FilterKey) => setFilters((f) => ({ ...f, [key]: !f[key] }));
 
-  const all = storesInDong(dong);
+  const all = gpsLocation ? storesNear(gpsLocation) : storesInDong(dong);
   const counts = useMemo(() => {
     const openOnly = all.filter((s) => isOpenNow(s, now, hourOverride));
     const byCat2 = (c: string) => openOnly.filter((s) => s.cat2 === c).length;

@@ -172,6 +172,14 @@ const tests = [
   ["정상 후보는 추천 가능하다", () => {
     assert.equal(evaluateEligibility(store, baseContext, 100).eligible, true);
   }],
+  ["GPS 사용 중에는 선택 동네가 달라도 가까운 후보를 허용한다", () => {
+    const otherNeighborhood = { ...store, neighborhood: "석사동" };
+    const gpsContext = {
+      ...baseContext,
+      location: { ...baseContext.location, source: "gps" },
+    };
+    assert.equal(evaluateEligibility(otherNeighborhood, gpsContext, 100).eligible, true);
+  }],
   ["남은 잔액보다 비싼 메뉴는 제외한다", () => {
     const context = {
       ...baseContext,

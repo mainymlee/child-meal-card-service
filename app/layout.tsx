@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { BalanceProvider } from "@/lib/hooks/useBalance";
 import { DemoHourProvider } from "@/lib/hooks/useDemoHour";
 import { OverlayProvider } from "@/lib/overlay/OverlayProvider";
+import { LocationProvider } from "@/lib/location/LocationProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -28,11 +29,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <BalanceProvider>
           <DemoHourProvider>
-            <div id="app" className="appShell">
-              <OverlayProvider>
-                {children}
-              </OverlayProvider>
-            </div>
+            <LocationProvider>
+              <div id="app" className="appShell">
+                <OverlayProvider>
+                  {children}
+                </OverlayProvider>
+              </div>
+            </LocationProvider>
           </DemoHourProvider>
         </BalanceProvider>
       </body>
