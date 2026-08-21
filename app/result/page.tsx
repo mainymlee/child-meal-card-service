@@ -74,9 +74,9 @@ export default function ResultPage() {
   const { balance, lastUpdatedISO } = useBalance();
   const expMode = useExpMode();
   const now = useMemo(() => nowInSeoul(), []);
-  const home = dongCenter(dong);
+  const home = useMemo(() => dongCenter(dong), [dong]);
   const { gpsLocation, setGpsLocation } = useAppLocation();
-  const origin = gpsLocation ?? home;
+  const origin = useMemo(() => gpsLocation ?? home, [gpsLocation, home]);
   const balancePlan = useMemo(
     () => calcBalancePlan(
       balance,
@@ -99,7 +99,10 @@ export default function ResultPage() {
 
   const toggle = (key: FilterKey) => setFilters((f) => ({ ...f, [key]: !f[key] }));
 
-  const all = gpsLocation ? storesNear(gpsLocation) : storesInDong(dong);
+  const all = useMemo(
+    () => gpsLocation ? storesNear(gpsLocation) : storesInDong(dong),
+    [gpsLocation, dong]
+  );
   const counts = useMemo(() => {
     const openOnly = all.filter((s) => isOpenNow(s, now, hourOverride));
     const byCat2 = (c: string) => openOnly.filter((s) => s.cat2 === c).length;
@@ -167,18 +170,18 @@ export default function ResultPage() {
 
   const cvsOpenCount = all.filter((s) => s.cat2 === "cvs" && isOpenNow(s, now, hourOverride)).length;
 
-  const mapStores = all.filter((store) => {
+  const mapStores = useMemo(() => all.filter((store) => {
     if (cat !== "all" && store.cat2 !== cat) return false;
     return matchesSearch(store, query);
-  });
-  const markers: MapMarker[] = mapStores.map((store) => ({
-    id: store.id,
-    lat: store.lat,
-    lng: store.lng,
-    label: store.name,
-    category: store.cat2,
-    onClick: () => router.push(`/store/${store.id}`),
-  }));
+  }), [all, cat, query]);
+  const markers: MapMarker[] = useMemo(() => mapStores.map((store) => ({
+      id: store.id,
+      lat: store.lat,
+      lng: store.lng,
+      label: store.name,
+      category: store.cat2,
+      onClick: () => router.push(`/store/${store.id}`),
+    })), [mapStores, router]);
 
   return (
     <>

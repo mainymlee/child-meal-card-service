@@ -55,9 +55,11 @@ export function scoreCandidate(
   context: RecommendationContext
 ): RecommendationScoreBreakdown {
   const repeats = context.mealHistory.filter((meal) => meal.grp === store.grp).length;
-  const negative = context.feedback.filter(
-    (item) => item.satisfaction < 0 && (item.storeId === store.id || item.grp === store.grp)
-  ).length;
+  const recentFeedback = context.feedback.slice(-20);
+  const negative = recentFeedback.reduce((score, item, index, items) => {
+    if (item.satisfaction >= 0 || (item.storeId !== store.id && item.grp !== store.grp)) return score;
+    return score + 0.35 + ((index + 1) / items.length) * 0.65;
+  }, 0);
   const confidence = dataConfidence(store);
   const nutrition = nutritionFitScore(
     menu,
@@ -72,7 +74,7 @@ export function scoreCandidate(
 
   return {
     spendingPace: spendingPaceScore(menu.price, context),
-    base: GRP_BASE_SCORE[store.grp],
+    base: GRP_BASE_SCORE[store.grp] ?? 0,
     nutrition: clamp(nutrition, -8, 12),
     preference: preferenceScore(store, menu, context),
     feedback: 0,
@@ -81,10 +83,12 @@ export function scoreCandidate(
     confidence: confidence === "high" ? 4 : confidence === "medium" ? 0 : -3,
     repetitionPenalty: -clamp(repeats * 2, 0, 10),
     negativeFeedbackPenalty: -clamp(
-      negative + (nutritionEstimate.sodium === "높음" && context.feedback.some((f) => f.reason === "spicy") ? 2 : 0),
+      negative + (nutritionEstimate.sodium === "높음" && recentFeedback.some(
+        (item) => item.reason === "spicy" && (item.storeId === store.id || item.grp === store.grp)
+      ) ? 2 : 0),
       0,
       10
-    ),
+    ) || 0,
   };
 }
 

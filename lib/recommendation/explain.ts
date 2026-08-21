@@ -3,9 +3,13 @@ import type { RecommendationReason, RecommendationScoreBreakdown } from "./types
 export function explainRecommendation(
   score: RecommendationScoreBreakdown,
   price: number,
-  dailyRecommended: number
+  dailyRecommended: number,
+  remainingBalance: number,
+  locationSource: "gps" | "dong-center"
 ): RecommendationReason[] {
-  const spendingLabel = dailyRecommended > 0
+  const spendingLabel = remainingBalance > 0 && remainingBalance < dailyRecommended
+    ? `남은 잔액 ${remainingBalance.toLocaleString()}원 안에서 고른 메뉴예요.`
+    : dailyRecommended > 0
     ? `오늘 권장액 ${dailyRecommended.toLocaleString()}원에 맞춰 고른 메뉴예요.`
     : "현재 남은 잔액 범위에서 고른 메뉴예요.";
   const reasons: RecommendationReason[] = [
@@ -15,7 +19,11 @@ export function explainRecommendation(
   const optional: RecommendationReason[] = [
     { code: "nutrition", label: "최근 식사의 영양 균형을 보완해요.", contribution: score.nutrition },
     { code: "preference", label: "최근 만족도와 취향을 반영했어요.", contribution: score.preference },
-    { code: "distance", label: "선택한 지역에서 이동 부담이 적어요.", contribution: score.distance },
+    {
+      code: "distance",
+      label: locationSource === "gps" ? "현재 위치에서 이동 부담이 적어요." : "선택한 지역에서 이동 부담이 적어요.",
+      contribution: score.distance,
+    },
     { code: "confidence", label: "메뉴 정보의 확인 수준을 함께 고려했어요.", contribution: score.confidence },
   ];
   reasons.push(...optional.filter((reason) => reason.contribution > 0).sort(

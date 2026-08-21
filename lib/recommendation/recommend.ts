@@ -48,7 +48,9 @@ export function recommendMeals(
       reasons: explainRecommendation(
         best.score,
         best.menu.price,
-        context.spendingPlan.dailyRecommended
+        context.spendingPlan.dailyRecommended,
+        context.spendingPlan.remainingBalance,
+        context.location.source
       ),
       warnings: store.menuSource === "store-verified"
         ? []

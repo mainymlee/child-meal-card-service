@@ -24,9 +24,17 @@ const DEFAULT_BALANCE: StoredBalance = {
 // shared across server requests.
 let cachedRaw: string | null = null;
 let cachedSnapshot: StoredBalance = DEFAULT_BALANCE;
+let memoryOnly = false;
 const listeners = new Set<() => void>();
 
+function handleStorage(event: StorageEvent) {
+  if (event.key !== STORAGE_KEY) return;
+  cachedRaw = null;
+  listeners.forEach((listener) => listener());
+}
+
 function getSnapshot(): StoredBalance {
+  if (memoryOnly) return cachedSnapshot;
   let raw: string | null = null;
   try {
     raw = window.localStorage.getItem(STORAGE_KEY);
@@ -50,7 +58,11 @@ function getServerSnapshot(): StoredBalance {
 
 function subscribe(callback: () => void) {
   listeners.add(callback);
-  return () => listeners.delete(callback);
+  if (listeners.size === 1) window.addEventListener("storage", handleStorage);
+  return () => {
+    listeners.delete(callback);
+    if (listeners.size === 0) window.removeEventListener("storage", handleStorage);
+  };
 }
 
 interface BalanceContextValue {
@@ -66,7 +78,10 @@ export function BalanceProvider({ children }: { children: React.ReactNode }) {
 
   const setBalance = (next: number) => {
     const value: StoredBalance = { balance: next, lastUpdatedISO: new Date().toISOString() };
-    writeLocalStorage(STORAGE_KEY, value);
+    if (!writeLocalStorage(STORAGE_KEY, value)) {
+      memoryOnly = true;
+      window.dispatchEvent(new CustomEvent("hanki:storage-error"));
+    }
     cachedRaw = JSON.stringify(value);
     cachedSnapshot = value;
     listeners.forEach((l) => l());

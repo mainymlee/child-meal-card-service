@@ -136,7 +136,8 @@ export function initialChatState(ctx: RecommendContext): ChatState {
 export function classifyFreeText(
   text: string
 ): "cvs" | "expiry" | "balance" | "food" | "welfare" | "dong" | "unknown" {
-  if (/편의점|도시락|삼각김밥|컵라면/.test(text)) return "cvs";
+  const rejectsCvs = /(편의점|도시락|삼각김밥|컵라면)\s*(?:은|는|이|가)?\s*(?:말고|말고요|아니고|빼고)/.test(text);
+  if (!rejectsCvs && /편의점|도시락|삼각김밥|컵라면/.test(text)) return "cvs";
   if (/이월|소멸|넘어가|사라지|규정/.test(text)) return "expiry";
   if (/잔액|얼마|남았|충전|한도/.test(text)) return "balance";
   if (/먹|배고|메뉴|추천|밥|점심|저녁|식당/.test(text)) return "food";

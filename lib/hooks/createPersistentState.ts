@@ -11,9 +11,16 @@ import { useSyncExternalStore } from "react";
 export function createPersistentState<T>(key: string, defaultValue: T) {
   let cachedRaw: string | null = null;
   let cachedSnapshot: T = defaultValue;
+  let memoryOnly = false;
   const listeners = new Set<() => void>();
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key !== key) return;
+    cachedRaw = null;
+    listeners.forEach((listener) => listener());
+  };
 
   function getSnapshot(): T {
+    if (memoryOnly) return cachedSnapshot;
     let raw: string | null = null;
     try {
       raw = window.localStorage.getItem(key);
@@ -37,7 +44,11 @@ export function createPersistentState<T>(key: string, defaultValue: T) {
 
   function subscribe(callback: () => void) {
     listeners.add(callback);
-    return () => listeners.delete(callback);
+    if (listeners.size === 1) window.addEventListener("storage", handleStorage);
+    return () => {
+      listeners.delete(callback);
+      if (listeners.size === 0) window.removeEventListener("storage", handleStorage);
+    };
   }
 
   function set(next: T | ((prev: T) => T)) {
@@ -48,7 +59,8 @@ export function createPersistentState<T>(key: string, defaultValue: T) {
     try {
       window.localStorage.setItem(key, JSON.stringify(resolved));
     } catch {
-      // ignore quota / privacy-mode errors
+      memoryOnly = true;
+      window.dispatchEvent(new CustomEvent("hanki:storage-error"));
     }
     cachedRaw = JSON.stringify(resolved);
     cachedSnapshot = resolved;

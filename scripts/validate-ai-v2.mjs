@@ -45,9 +45,13 @@ function loadTypeScript(file) {
   return loadedModule.exports;
 }
 
-const { spendingPaceScore } = loadTypeScript(
+const { spendingPaceScore, scoreCandidate } = loadTypeScript(
   path.join(root, "lib/recommendation/scorer.ts")
 );
+const { explainRecommendation } = loadTypeScript(
+  path.join(root, "lib/recommendation/explain.ts")
+);
+const { classifyFreeText } = loadTypeScript(path.join(root, "lib/chatEngine.ts"));
 const { evaluateEligibility } = loadTypeScript(
   path.join(root, "lib/recommendation/eligibility.ts")
 );
@@ -179,6 +183,55 @@ const tests = [
       location: { ...baseContext.location, source: "gps" },
     };
     assert.equal(evaluateEligibility(otherNeighborhood, gpsContext, 100).eligible, true);
+  }],
+  ["편의점 부정 표현은 편의점 의도로 분류하지 않는다", () => {
+    assert.equal(classifyFreeText("편의점 말고 밥 먹고 싶어요"), "food");
+    assert.equal(classifyFreeText("컵라면 빼고 메뉴 추천"), "food");
+  }],
+  ["매운맛 불만은 관련 없는 가게에 페널티를 주지 않는다", () => {
+    const context = {
+      ...baseContext,
+      feedback: [{
+        storeId: "other-store",
+        grp: "분식",
+        menuName: "매운 라면",
+        satisfaction: -1,
+        reason: "spicy",
+        createdAt: "2026-08-20T00:00:00.000Z",
+      }],
+    };
+    const score = scoreCandidate(store, { name: "라면", price: 7000 }, 100, context);
+    assert.equal(score.negativeFeedbackPenalty, 0);
+  }],
+  ["최근 20건 밖의 부정 피드백은 페널티에서 제외한다", () => {
+    const oldNegative = {
+      storeId: store.id,
+      grp: store.grp,
+      menuName: "백반",
+      satisfaction: -1,
+      reason: "taste",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    };
+    const recentPositive = Array.from({ length: 20 }, (_, index) => ({
+      ...oldNegative,
+      satisfaction: 1,
+      createdAt: `2026-08-${String(index + 1).padStart(2, "0")}T00:00:00.000Z`,
+    }));
+    const score = scoreCandidate(store, store.menu[0], 100, {
+      ...baseContext,
+      feedback: [oldNegative, ...recentPositive],
+    });
+    assert.equal(score.negativeFeedbackPenalty, 0);
+  }],
+  ["잔액이 하루 기준보다 적으면 잔액 기준 설명을 제공한다", () => {
+    const reasons = explainRecommendation(
+      { spendingPace: 10, base: 0, nutrition: 0, preference: 0, feedback: 0, budget: 0, distance: 0, confidence: 0, repetitionPenalty: 0, negativeFeedbackPenalty: 0 },
+      4000,
+      10000,
+      5000,
+      "gps"
+    );
+    assert.match(reasons[0].label, /남은 잔액 5,000원/);
   }],
   ["남은 잔액보다 비싼 메뉴는 제외한다", () => {
     const context = {

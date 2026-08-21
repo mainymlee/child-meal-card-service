@@ -10,11 +10,12 @@ export function readLocalStorage<T>(key: string): T | null {
   }
 }
 
-export function writeLocalStorage<T>(key: string, value: T): void {
-  if (typeof window === "undefined") return;
+export function writeLocalStorage<T>(key: string, value: T): boolean {
+  if (typeof window === "undefined") return false;
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
+    return true;
   } catch {
-    // ignore quota / privacy-mode errors
+    return false;
   }
 }

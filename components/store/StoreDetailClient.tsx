@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { NavBar } from "@/components/layout/NavBar";
 import { StoreBadgePills } from "@/components/Pill";
 import { FavoriteButton } from "@/components/store/FavoriteButton";
@@ -14,6 +15,7 @@ import { dongCenter } from "@/lib/persona";
 import { distanceMeters, isOpenNow, walkingMinutes } from "@/lib/stores";
 import { nowInSeoul } from "@/lib/time";
 import type { Store } from "@/lib/types";
+import { useAppLocation } from "@/lib/location/LocationProvider";
 
 const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 const CATEGORY_EMOJI = { kr: "🍚", cn: "🥡", wf: "🍴", bs: "🍢", cvs: "🏪" } as const;
@@ -23,9 +25,11 @@ export function StoreDetailClient({ store }: { store: Store }) {
   const mealLog = useMealLog();
   const reports = useReports();
   const { open } = useSheet();
+  const { gpsLocation } = useAppLocation();
+  const visitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const now = nowInSeoul();
-  const home = dongCenter(store.neighborhood);
+  const home = gpsLocation ?? dongCenter(store.neighborhood);
   const openNow = isOpenNow(store, now, hourOverride);
   const distance = distanceMeters(home, store);
   const walk = walkingMinutes(distance);
@@ -38,8 +42,13 @@ export function StoreDetailClient({ store }: { store: Store }) {
   const recentRepeats = mealLog.filter((meal) => meal.grp === store.grp).length;
 
   const handleNavigate = () => {
-    setTimeout(() => open(<VisitSheet storeId={store.id} />), 1200);
+    if (visitTimerRef.current) clearTimeout(visitTimerRef.current);
+    visitTimerRef.current = setTimeout(() => open(<VisitSheet storeId={store.id} />), 1200);
   };
+
+  useEffect(() => () => {
+    if (visitTimerRef.current) clearTimeout(visitTimerRef.current);
+  }, []);
 
   return (
     <>

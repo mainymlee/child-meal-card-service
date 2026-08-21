@@ -95,4 +95,5 @@ export const DEFAULT_FOOD_PREFERENCES: UserFoodPreferences = {
   allergyKeywords: [],
   spiceLevel: "normal",
   portion: "normal",
+  maxWalkingMeters: 5_000,
 };
