@@ -75,6 +75,8 @@ export default function ResultPage() {
   const expMode = useExpMode();
   const now = useMemo(() => nowInSeoul(), []);
   const home = dongCenter(dong);
+  const [gpsLocation, setGpsLocation] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
+  const origin = gpsLocation ?? home;
   const balancePlan = useMemo(
     () => calcBalancePlan(
       balance,
@@ -123,8 +125,8 @@ export default function ResultPage() {
     });
     if (nearestFirst || cat === "cvs") {
       const sorted = nearestFirst
-        ? [...candidates].sort((a, b) => distanceMeters(home, a) - distanceMeters(home, b))
-        : rankStores(candidates, { mealLog, home, reports, feedback });
+        ? [...candidates].sort((a, b) => distanceMeters(origin, a) - distanceMeters(origin, b))
+        : rankStores(candidates, { mealLog, home: origin, reports, feedback });
       return { list: sorted, recommendedMenus: new Map<string, MenuItem>() };
     }
 
@@ -143,7 +145,7 @@ export default function ResultPage() {
       serviceMode: filters.togo ? "takeout" : "any",
       now,
       hourOverride,
-      location: { ...home, source: "dong-center" },
+      location: { ...origin, source: gpsLocation ? "gps" : "dong-center" },
       mealHistory: mealLog,
       feedback,
       preferences: DEFAULT_FOOD_PREFERENCES,
@@ -152,7 +154,7 @@ export default function ResultPage() {
     const recommendedIds = new Set(recommendations.map((item) => item.store.id));
     const remaining = rankStores(
       candidates.filter((store) => !recommendedIds.has(store.id)),
-      { mealLog, home, reports, feedback }
+      { mealLog, home: origin, reports, feedback }
     );
     return {
       list: [...recommendations.map((item) => item.store), ...remaining],
@@ -161,7 +163,7 @@ export default function ResultPage() {
         item.store.menu.find((menu) => menu.name === item.menuName)!,
       ])),
     };
-  }, [all, cat, filters, nearestFirst, now, hourOverride, home, mealLog, reports, feedback, query, dong, balance, balancePlan]);
+  }, [all, cat, filters, nearestFirst, now, hourOverride, origin, gpsLocation, mealLog, reports, feedback, query, dong, balance, balancePlan]);
 
   const cvsOpenCount = all.filter((s) => s.cat2 === "cvs" && isOpenNow(s, now, hourOverride)).length;
 
@@ -201,7 +203,13 @@ export default function ResultPage() {
 
         <CategorySegment active={cat} counts={counts} onChange={setCat} />
 
-        <KakaoMap center={home} markers={markers} locationLabel={dong} />
+        <KakaoMap
+          center={origin}
+          markers={markers}
+          locationLabel={gpsLocation ? "현재 위치" : dong}
+          userLocation={gpsLocation}
+          onLocationFound={setGpsLocation}
+        />
 
         <div className="chips">
           {(Object.keys(CHIP_LABELS) as FilterKey[]).map((key) => (
@@ -261,7 +269,7 @@ export default function ResultPage() {
             <StoreRow
               key={store.id}
               store={store}
-              distance={distanceMeters(home, store)}
+              distance={distanceMeters(origin, store)}
               openNow={isOpenNow(store, now, hourOverride)}
               verification={verificationStatus(reports, store.id)}
               recommendedItem={recommendedMenus.get(store.id)}

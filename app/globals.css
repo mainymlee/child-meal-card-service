@@ -628,6 +628,18 @@ a {
   width: 20px;
   height: 20px;
 }
+.mapctl button.locating svg { animation: gpsPulse 0.8s ease-in-out infinite alternate; }
+.userLocationMarker {
+  width: 18px;
+  height: 18px;
+  background: #2878ff;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(40, 120, 255, 0.28), 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+@keyframes gpsPulse {
+  to { opacity: 0.45; transform: scale(0.82); }
+}
 .maptip {
   position: absolute;
   left: 12px;

@@ -4,6 +4,7 @@ import Script from "next/script";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SimplifiedCategory } from "@/lib/types";
 import { ExpandIcon, ShrinkIcon, TargetIcon } from "@/components/icons";
+import { useToast } from "@/lib/overlay/OverlayProvider";
 
 const CATEGORY_EMOJI = {
   kr: "🍚",
@@ -27,23 +28,69 @@ interface KakaoMapProps {
   markers: MapMarker[];
   height?: number;
   locationLabel?: string;
+  userLocation?: { lat: number; lng: number } | null;
+  onLocationFound?: (location: { lat: number; lng: number; accuracy: number }) => void;
 }
 
 const KAKAO_MAP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
 
-export function KakaoMap({ center, markers, height = 214, locationLabel }: KakaoMapProps) {
+export function KakaoMap({
+  center,
+  markers,
+  height = 214,
+  locationLabel,
+  userLocation = null,
+  onLocationFound,
+}: KakaoMapProps) {
+  const { show } = useToast();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const overlaysRef = useRef<kakao.maps.CustomOverlay[]>([]);
   const [ready, setReady] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [locating, setLocating] = useState(false);
   const mapHeight = expanded ? 342 : height;
 
   const moveToCenter = useCallback(() => {
     if (!mapRef.current || !window.kakao) return;
     mapRef.current.setCenter(new window.kakao.maps.LatLng(center.lat, center.lng));
   }, [center.lat, center.lng]);
+
+  const moveToCurrentLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      show("이 기기에서는 위치 기능을 사용할 수 없어요.");
+      return;
+    }
+    if (locating) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const location = {
+          lat: coords.latitude,
+          lng: coords.longitude,
+          accuracy: coords.accuracy,
+        };
+        onLocationFound?.(location);
+        if (mapRef.current && window.kakao) {
+          mapRef.current.setCenter(new window.kakao.maps.LatLng(location.lat, location.lng));
+        }
+        setLocating(false);
+        show("현재 위치를 기준으로 다시 추천했어요.");
+      },
+      (error) => {
+        setLocating(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          show("위치 권한이 필요해요. 브라우저 설정에서 허용해 주세요.");
+        } else if (error.code === error.TIMEOUT) {
+          show("현재 위치를 찾는 데 시간이 걸려요. 다시 시도해 주세요.");
+        } else {
+          show("현재 위치를 확인하지 못했어요.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 }
+    );
+  }, [locating, onLocationFound, show]);
 
   const initMap = () => {
     if (!containerRef.current || !window.kakao) return;
@@ -82,11 +129,25 @@ export function KakaoMap({ center, markers, height = 214, locationLabel }: Kakao
       return overlay;
     });
 
+    if (userLocation) {
+      const content = document.createElement("div");
+      content.className = "userLocationMarker";
+      content.setAttribute("role", "img");
+      content.setAttribute("aria-label", "내 현재 위치");
+      const overlay = new window.kakao.maps.CustomOverlay({
+        position: new window.kakao.maps.LatLng(userLocation.lat, userLocation.lng),
+        content,
+        zIndex: 10,
+      });
+      overlay.setMap(mapRef.current);
+      overlaysRef.current.push(overlay);
+    }
+
     return () => {
       overlaysRef.current.forEach((overlay) => overlay.setMap(null));
       overlaysRef.current = [];
     };
-  }, [ready, markers]);
+  }, [ready, markers, userLocation]);
 
   useEffect(() => {
     if (!ready || !mapRef.current) return;
@@ -157,7 +218,14 @@ export function KakaoMap({ center, markers, height = 214, locationLabel }: Kakao
         >
           {expanded ? <ShrinkIcon /> : <ExpandIcon />}
         </button>
-        <button type="button" aria-label="동네 중심으로" onClick={moveToCenter}>
+        <button
+          type="button"
+          className={locating ? "locating" : ""}
+          aria-label={locating ? "현재 위치 찾는 중" : "내 위치로 이동"}
+          aria-busy={locating}
+          disabled={locating}
+          onClick={moveToCurrentLocation}
+        >
           <TargetIcon />
         </button>
       </div>
