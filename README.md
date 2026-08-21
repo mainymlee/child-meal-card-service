@@ -85,6 +85,15 @@ npm run geocode
 npm run refine-menus
 ```
 
+실제 메뉴 확인용 우선 매장 목록을 만들고 검증된 메뉴를 적용하려면 다음 명령을 사용합니다.
+
+```bash
+npm run menu-queue
+npm run apply-verified-menus
+```
+
+실제 메뉴 등록 기준과 입력 형식은 [실제 메뉴 데이터 확보 절차](docs/실제메뉴_데이터확보_절차.md)를 참고합니다.
+
 ## 검증
 
 ```bash

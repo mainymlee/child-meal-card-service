@@ -105,7 +105,13 @@ export function StoreDetailClient({ store }: { store: Store }) {
 
         <div className="card" style={{ marginTop: 16 }}>
           <p className="lbl">
-            {store.menuSource === "unverified" ? "메뉴 확인 필요" : "가게명·업종 기반 예상 메뉴"}
+            {store.menuSource === "store-verified"
+              ? "매장 확인 메뉴"
+              : store.menuSource === "brand-official"
+                ? "브랜드 공식 메뉴"
+                : store.menuSource === "unverified"
+                  ? "메뉴 확인 필요"
+                  : "가게명·업종 기반 예상 메뉴"}
           </p>
           {store.menu.length ? (
             <ul className="menu">
@@ -113,7 +119,8 @@ export function StoreDetailClient({ store }: { store: Store }) {
                 <li key={item.name}>
                   <span>{item.name}</span>
                   <span className={`p ${item.underBudget ? "ok" : "over"}`}>
-                    약 {item.price.toLocaleString()}원
+                    {store.menuSource === "store-verified" ? "" : "약 "}
+                    {item.price.toLocaleString()}원
                   </span>
                 </li>
               ))}
@@ -125,7 +132,11 @@ export function StoreDetailClient({ store }: { store: Store }) {
           )}
         </div>
         <p className="sub" style={{ fontSize: 12.5, color: "var(--g400)", margin: "-4px 2px 12px" }}>
-          메뉴와 가격은 실제 메뉴판이 아닌 예상값이며 방문 전 가게에 확인해주세요.
+          {store.menuSource === "store-verified"
+            ? `${store.menuVerification?.verifiedAt.slice(0, 10) ?? "최근"} 매장 확인 기준이며 이후 변경될 수 있어요.`
+            : store.menuSource === "brand-official"
+              ? "브랜드 공식 메뉴 기준이며 지점별 판매 여부와 가격은 다를 수 있어요."
+              : "메뉴와 가격은 실제 메뉴판이 아닌 예상값이며 방문 전 가게에 확인해주세요."}
         </p>
 
         {!isCvs && recentRepeats >= 2 ? (

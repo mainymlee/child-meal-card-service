@@ -95,7 +95,18 @@ export interface Store {
   counterDescription: string;
   badges: StoreBadges;
   menu: MenuItem[];
-  menuSource: "name-derived" | "category-derived" | "unverified";
+  menuSource:
+    | "store-verified"
+    | "brand-official"
+    | "name-derived"
+    | "category-derived"
+    | "unverified";
+  menuVerification?: {
+    sourceType: "store-confirmed" | "brand-official";
+    sourceUrl: string | null;
+    verifiedAt: string;
+    note: string | null;
+  };
 }
 
 export interface StoresFile {
@@ -105,6 +116,7 @@ export interface StoresFile {
   placeholderCoordinates: boolean;
   stores: Store[];
   menuRefinedAt?: string;
+  menuVerifiedAt?: string;
   menuSourceCounts?: Record<string, number>;
 }
 

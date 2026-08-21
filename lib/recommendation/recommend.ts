@@ -50,9 +50,13 @@ export function recommendMeals(
         best.menu.price,
         context.spendingPlan.dailyRecommended
       ),
-      warnings: store.menuSource === "name-derived"
-        ? ["가게명으로 추정한 메뉴와 가격이므로 방문 전 확인이 필요해요."]
-        : ["업종으로 추정한 메뉴와 가격이므로 방문 전 확인이 필요해요."],
+      warnings: store.menuSource === "store-verified"
+        ? []
+        : store.menuSource === "brand-official"
+          ? ["브랜드 공식 메뉴이며 지점별 판매 여부와 가격은 다를 수 있어요."]
+          : store.menuSource === "name-derived"
+            ? ["가게명으로 추정한 메뉴와 가격이므로 방문 전 확인이 필요해요."]
+            : ["업종으로 추정한 메뉴와 가격이므로 방문 전 확인이 필요해요."],
       relaxedConditions: [],
       dataConfidence: dataConfidence(store),
     });
@@ -60,4 +64,3 @@ export function recommendMeals(
 
   return results.sort((a, b) => b.totalScore - a.totalScore).slice(0, limit);
 }
-

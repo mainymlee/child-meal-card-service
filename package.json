@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "validate-ai": "node scripts/validate-ai-v2.mjs",
+    "menu-queue": "node scripts/create-menu-verification-queue.mjs",
+    "apply-verified-menus": "node scripts/apply-verified-menus.mjs",
     "geocode": "node --env-file=.env.local scripts/geocode-stores.mjs",
     "refine-menus": "node scripts/refine-store-menus.mjs"
   },

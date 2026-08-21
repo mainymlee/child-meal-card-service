@@ -11,8 +11,11 @@ const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
 export function dataConfidence(store: Store): DataConfidence {
-  if (store.menuSource === "name-derived") return "medium";
-  return store.menuSource === "category-derived" ? "low" : "low";
+  if (store.menuSource === "store-verified") return "high";
+  if (store.menuSource === "brand-official" || store.menuSource === "name-derived") {
+    return "medium";
+  }
+  return "low";
 }
 
 export function spendingPaceScore(

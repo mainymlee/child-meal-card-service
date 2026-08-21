@@ -28,6 +28,11 @@ export function StoreRow({
   const item = recommendedItem ?? cheapestUnderBudgetItem(store);
   const isCvs = store.cat2 === "cvs";
   const pending = verification === "pending";
+  const priceSuffix = store.menuSource === "store-verified"
+    ? ""
+    : store.menuSource === "brand-official"
+      ? " 브랜드 기준"
+      : " 예상";
 
   return (
     <button
@@ -41,7 +46,7 @@ export function StoreRow({
         <p className="nm">{store.name}</p>
         <p className="mt">
           {recommendedItem ? "AI 추천 · " : `${store.category} · `}{item
-            ? `${item.name} ${item.price.toLocaleString()}원 예상`
+            ? `${item.name} ${item.price.toLocaleString()}원${priceSuffix}`
             : "메뉴 확인 필요"}
         </p>
         <StoreBadgePills
