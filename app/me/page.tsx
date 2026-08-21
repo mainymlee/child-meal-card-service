@@ -178,6 +178,12 @@ export default function MePage() {
             <ChevronIcon size={17} />
           </span>
         </button>
+        <Link className="mrow meMenuRow" href="/menu-verify">
+          메뉴판 사진 확인 도구
+          <span className="ch">
+            <ChevronIcon size={17} />
+          </span>
+        </Link>
       </div>
 
       <TabBar />

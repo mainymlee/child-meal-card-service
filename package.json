@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "validate-ai": "node scripts/validate-ai-v2.mjs",
+    "validate-menu-ocr": "node --experimental-strip-types scripts/validate-menu-ocr.mjs",
     "menu-queue": "node scripts/create-menu-verification-queue.mjs",
     "apply-verified-menus": "node scripts/apply-verified-menus.mjs",
     "geocode": "node --env-file=.env.local scripts/geocode-stores.mjs",
@@ -16,7 +17,8 @@
   "dependencies": {
     "next": "16.3.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",
