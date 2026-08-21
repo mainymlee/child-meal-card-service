@@ -65,7 +65,7 @@ export default function MePage() {
             <span>원</span>
           </p>
           <p className="sub">
-            하루 {plan.dailyRecommended.toLocaleString()}원 쓰면 딱 맞아요
+            하루 지원 기준은 {plan.dailyRecommended.toLocaleString()}원이에요
           </p>
           <Link className="btn ghost sm" href="/balance" style={{ marginTop: 12 }}>
             잔액 다시 입력

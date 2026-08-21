@@ -139,6 +139,12 @@ const tests = [
     assert.equal(later.dailyRecommended, first.dailyRecommended);
     assert.equal(later.recommendedUpperBound, first.recommendedUpperBound);
   }],
+  ["하루 지원 기준과 AI 추천 상한은 1만원으로 고정한다", () => {
+    const plan = calcBalancePlan(300000, now, "month", now);
+    assert.equal(plan.dailyRecommended, 10000);
+    assert.equal(plan.recommendedUpperBound, 10000);
+    assert.ok(plan.dailySpendNeeded > 10000);
+  }],
   ["사용 계획이 늦어지면 권장액 대신 소멸 예상액이 증가한다", () => {
     const updatedAt = new Date(2026, 7, 21, 12, 0, 0);
     const first = calcBalancePlan(90000, updatedAt, "month", updatedAt);

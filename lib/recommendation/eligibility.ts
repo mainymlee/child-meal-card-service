@@ -41,7 +41,7 @@ export function evaluateEligibility(
   const reasons: IneligibilityReason[] = [];
   const mealBudget = Math.min(
     context.spendingPlan.remainingBalance,
-    context.spendingPlan.officialDailyLimit ?? Number.POSITIVE_INFINITY
+    context.spendingPlan.officialDailyLimit ?? context.spendingPlan.recommendedUpperBound
   );
 
   if (store.neighborhood !== context.neighborhood) reasons.push("wrong-neighborhood");

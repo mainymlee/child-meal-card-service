@@ -33,7 +33,7 @@ export default function AppHomePage() {
   const { open } = useSheet();
 
   const now = nowInSeoul();
-  const { remainingDays, dailyRecommended, expiringAmount } = calcBalancePlan(
+  const { remainingDays, dailyRecommended, dailySpendNeeded, expiringAmount } = calcBalancePlan(
     balance,
     now,
     expMode,
@@ -91,15 +91,16 @@ export default function AppHomePage() {
             <div className="innerbox warn">
               <WarnIcon size={15} />
               <span>
-                이대로면 <b>{expiringAmount.toLocaleString()}원</b>이 {cycleEnd.getMonth() + 1}월{" "}
-                {cycleEnd.getDate()}일에 사라져. 하루 <b>{dailyRecommended.toLocaleString()}원</b>이 기준
+                이대로면 <b>{expiringAmount.toLocaleString()}원</b>이 남을 수 있어. 하루 지원 기준은{" "}
+                <b>{dailyRecommended.toLocaleString()}원</b>, 잔액 소진에는 하루{" "}
+                <b>{dailySpendNeeded.toLocaleString()}원</b>이 필요해
               </span>
             </div>
           ) : (
             <div className="innerbox">
               <CheckIcon size={16} />
               <span>
-                사라지는 돈 없이 다 쓸 수 있어. 하루 <b>{dailyRecommended.toLocaleString()}원</b>이 기준
+                하루 지원 기준 <b>{dailyRecommended.toLocaleString()}원</b> 안에서 잔액을 다 쓸 수 있어
               </span>
             </div>
           )}

@@ -61,11 +61,15 @@ export default function BalancePage() {
               <b>{plan.remainingDays}일</b>
             </div>
             <div className="r">
-              <span>하루 권장 사용액</span>
+              <span>하루 지원 기준</span>
               <b>{plan.dailyRecommended.toLocaleString()}원</b>
             </div>
             <div className="r">
-              <span>앱 권장 사용 상한</span>
+              <span>잔액 소진 필요액</span>
+              <b>{plan.dailySpendNeeded.toLocaleString()}원</b>
+            </div>
+            <div className="r">
+              <span>AI 추천 예산 상한</span>
               <b>{plan.recommendedUpperBound.toLocaleString()}원</b>
             </div>
             <div className="r hl">

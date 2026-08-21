@@ -7,6 +7,7 @@ export interface CycleInfo {
 
 export interface BalancePlan extends CycleInfo {
   dailyRecommended: number;
+  dailySpendNeeded: number;
   recommendedUpperBound: number;
   expiringAmount: number;
 }
@@ -37,14 +38,12 @@ export function getCycleInfo(today: Date, expMode: ExpMode = "month"): CycleInfo
   return { cycleEnd, remainingDays: daysBetweenInclusive(today, cycleEnd) };
 }
 
-function roundTo(value: number, step: number): number {
-  return Math.round(value / step) * step;
-}
+export const DAILY_MEAL_SUPPORT_STANDARD = 10_000;
 
 /**
- * The daily target is fixed when the user records the balance. It must not
- * rise merely because time passed while the stored balance stayed stale.
- * Updating the balance creates a new plan from that day onward.
+ * The support standard stays at 10,000 won. The separate spend-needed value
+ * is fixed when the balance is recorded, so stale balances do not make it
+ * rise every day without a new balance entry.
  */
 export function calcBalancePlan(
   balance: number,
@@ -62,15 +61,13 @@ export function calcBalancePlan(
   const planStartedAt = updatedInCurrentCycle ? balanceUpdatedAt : today;
   const plannedDays = getCycleInfo(planStartedAt, expMode).remainingDays;
   const rawDaily = balance / plannedDays;
-  const dailyRecommended = Math.max(0, roundTo(Math.floor(rawDaily), 100));
-  const recommendedUpperBound = Math.max(
-    dailyRecommended,
-    Math.ceil((dailyRecommended * 1.4) / 1000) * 1000
-  );
+  const dailySpendNeeded = Math.max(0, Math.ceil(rawDaily / 100) * 100);
+  const dailyRecommended = DAILY_MEAL_SUPPORT_STANDARD;
+  const recommendedUpperBound = DAILY_MEAL_SUPPORT_STANDARD;
   const expiringAmount = Math.max(
     0,
-    balance - dailyRecommended * remainingDays
+    balance - DAILY_MEAL_SUPPORT_STANDARD * remainingDays
   );
 
-  return { cycleEnd, remainingDays, dailyRecommended, recommendedUpperBound, expiringAmount };
+  return { cycleEnd, remainingDays, dailyRecommended, dailySpendNeeded, recommendedUpperBound, expiringAmount };
 }
