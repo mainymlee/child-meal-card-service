@@ -52,6 +52,9 @@ const { evaluateEligibility } = loadTypeScript(
   path.join(root, "lib/recommendation/eligibility.ts")
 );
 const { calcBalancePlan } = loadTypeScript(path.join(root, "lib/balance.ts"));
+const { recommendMeals } = loadTypeScript(
+  path.join(root, "lib/recommendation/recommend.ts")
+);
 
 const now = new Date(2026, 7, 21, 12, 0, 0);
 const baseContext = {
@@ -108,6 +111,22 @@ const store = {
 };
 
 const tests = [
+  ["지도 추천순은 오늘 권장액에 가까운 가게를 먼저 보여준다", () => {
+    const cheaper = {
+      ...store,
+      id: "cheap-store",
+      name: "저가 식당",
+      menu: [{ name: "저가 백반", price: 5000, underBudget: true }],
+    };
+    const target = {
+      ...store,
+      id: "target-store",
+      name: "권장액 식당",
+      menu: [{ name: "권장액 백반", price: 9000, underBudget: true }],
+    };
+    const results = recommendMeals([cheaper, target], baseContext, 2);
+    assert.equal(results[0].store.id, "target-store");
+  }],
   ["잔액을 다시 입력하지 않으면 날짜가 지나도 하루 권장액이 커지지 않는다", () => {
     const updatedAt = new Date(2026, 7, 21, 12, 0, 0);
     const first = calcBalancePlan(90000, updatedAt, "month", updatedAt);

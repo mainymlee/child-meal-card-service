@@ -14,9 +14,15 @@ import { useDemoHour } from "@/lib/hooks/useDemoHour";
 import { useMealLog } from "@/lib/hooks/useMealLog";
 import { useMealFeedback } from "@/lib/hooks/useMealFeedback";
 import { useReports } from "@/lib/hooks/useReports";
+import { useBalance } from "@/lib/hooks/useBalance";
+import { useExpMode } from "@/lib/hooks/useExpMode";
 import { distanceMeters, isOpenNow, storesInDong } from "@/lib/stores";
 import { rankStores, verificationStatus } from "@/lib/ranking";
-import { nowInSeoul } from "@/lib/time";
+import { nowInSeoul, toSeoulDate } from "@/lib/time";
+import { calcBalancePlan } from "@/lib/balance";
+import { recommendMeals } from "@/lib/recommendation/recommend";
+import { DEFAULT_FOOD_PREFERENCES } from "@/lib/recommendation/types";
+import type { MenuItem } from "@/lib/types";
 
 type FilterKey = "openNow" | "solo" | "togo" | "cheap";
 
@@ -65,8 +71,19 @@ export default function ResultPage() {
   const mealLog = useMealLog();
   const feedback = useMealFeedback();
   const reports = useReports();
+  const { balance, lastUpdatedISO } = useBalance();
+  const expMode = useExpMode();
   const now = useMemo(() => nowInSeoul(), []);
   const home = dongCenter(dong);
+  const balancePlan = useMemo(
+    () => calcBalancePlan(
+      balance,
+      now,
+      expMode,
+      lastUpdatedISO ? toSeoulDate(new Date(lastUpdatedISO)) : null
+    ),
+    [balance, now, expMode, lastUpdatedISO]
+  );
 
   const [cat, setCat] = useState<CategoryFilter>("all");
   const [filters, setFilters] = useState<Record<FilterKey, boolean>>({
@@ -94,7 +111,7 @@ export default function ResultPage() {
     };
   }, [all, now, hourOverride]);
 
-  const list = useMemo(() => {
+  const { list, recommendedMenus } = useMemo(() => {
     const candidates = all.filter((s) => {
       if (cat !== "all" && s.cat2 !== cat) return false;
       if (filters.openNow && !isOpenNow(s, now, hourOverride)) return false;
@@ -104,10 +121,47 @@ export default function ResultPage() {
       if (!matchesSearch(s, query)) return false;
       return true;
     });
-    return nearestFirst
-      ? [...candidates].sort((a, b) => distanceMeters(home, a) - distanceMeters(home, b))
-      : rankStores(candidates, { mealLog, home, reports, feedback });
-  }, [all, cat, filters, nearestFirst, now, hourOverride, home, mealLog, reports, feedback, query]);
+    if (nearestFirst || cat === "cvs") {
+      const sorted = nearestFirst
+        ? [...candidates].sort((a, b) => distanceMeters(home, a) - distanceMeters(home, b))
+        : rankStores(candidates, { mealLog, home, reports, feedback });
+      return { list: sorted, recommendedMenus: new Map<string, MenuItem>() };
+    }
+
+    const recommendations = recommendMeals(candidates, {
+      neighborhood: dong,
+      spendingPlan: {
+        remainingBalance: balance,
+        remainingDays: balancePlan.remainingDays,
+        dailyRecommended: balancePlan.dailyRecommended,
+        recommendedUpperBound: balancePlan.recommendedUpperBound,
+        officialDailyLimit: null,
+        expiringAmount: balancePlan.expiringAmount,
+        cycleEnd: balancePlan.cycleEnd.toISOString(),
+      },
+      diningMode: filters.solo ? "solo" : "together",
+      serviceMode: filters.togo ? "takeout" : "any",
+      now,
+      hourOverride,
+      location: { ...home, source: "dong-center" },
+      mealHistory: mealLog,
+      feedback,
+      preferences: DEFAULT_FOOD_PREFERENCES,
+      reports,
+    }, candidates.length);
+    const recommendedIds = new Set(recommendations.map((item) => item.store.id));
+    const remaining = rankStores(
+      candidates.filter((store) => !recommendedIds.has(store.id)),
+      { mealLog, home, reports, feedback }
+    );
+    return {
+      list: [...recommendations.map((item) => item.store), ...remaining],
+      recommendedMenus: new Map(recommendations.map((item) => [
+        item.store.id,
+        item.store.menu.find((menu) => menu.name === item.menuName)!,
+      ])),
+    };
+  }, [all, cat, filters, nearestFirst, now, hourOverride, home, mealLog, reports, feedback, query, dong, balance, balancePlan]);
 
   const cvsOpenCount = all.filter((s) => s.cat2 === "cvs" && isOpenNow(s, now, hourOverride)).length;
 
@@ -182,7 +236,7 @@ export default function ResultPage() {
             {cat === "cvs" ? "가까운 편의점" : "지금 갈 수 있는 곳"}{" "}
             <b>{list.length}곳</b>
           </p>
-          <span>{dong} 기준</span>
+          <span>{nearestFirst ? "가까운 순" : cat === "cvs" ? `${dong} 기준` : "AI v2 추천순"}</span>
         </div>
 
         {list.length === 0 ? (
@@ -210,6 +264,7 @@ export default function ResultPage() {
               distance={distanceMeters(home, store)}
               openNow={isOpenNow(store, now, hourOverride)}
               verification={verificationStatus(reports, store.id)}
+              recommendedItem={recommendedMenus.get(store.id)}
               onClick={() => router.push(`/store/${store.id}`)}
             />
           ))
