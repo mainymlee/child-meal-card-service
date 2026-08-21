@@ -22,9 +22,6 @@ import { useReports } from "@/lib/hooks/useReports";
 import { useSheet } from "@/lib/overlay/OverlayProvider";
 import { DongSheet } from "@/components/sheets/DongSheet";
 import { ProfileSheet } from "@/components/sheets/ProfileSheet";
-import { KakaoStatusSheet } from "@/components/sheets/KakaoStatusSheet";
-
-const HAS_KAKAO_KEY = Boolean(process.env.NEXT_PUBLIC_KAKAO_MAP_KEY);
 
 export default function MePage() {
   const router = useRouter();
@@ -167,13 +164,6 @@ export default function MePage() {
           }
         >
           가게에서 카드가 안 됐어요
-          <span className="ch">
-            <ChevronIcon size={17} />
-          </span>
-        </button>
-        <button className="mrow meMenuRow meMapRow" onClick={() => open(<KakaoStatusSheet />)}>
-          카카오맵 연결
-          <span className="v">{HAS_KAKAO_KEY ? "연결됨" : "약도 모드"}</span>
           <span className="ch">
             <ChevronIcon size={17} />
           </span>

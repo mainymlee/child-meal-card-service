@@ -2118,7 +2118,6 @@ body {
 .mePage .meDongRow { background: var(--cream); }
 .mePage .meWelfareRow { background: var(--yellow); }
 .mePage .meReportRow { background: var(--pink); }
-.mePage .meMapRow { background: var(--purple); }
 
 .meEditButton {
   margin-left: auto;
